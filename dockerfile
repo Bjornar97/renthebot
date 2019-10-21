@@ -3,4 +3,6 @@ FROM node:10
 # replace this with your application's default port
 EXPOSE 8888
 
-CMD node bot.js
+CMD echo "Starting bot"
+
+ENTRYPOINT node bot.js
