@@ -1,0 +1,28 @@
+{
+  "name": "rendogtv_viewers_bot",
+  "version": "0.0.1",
+  "description": "Bot for rendog tv viewers",
+  "main": "bot.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bjornar97/rendogtv_viewers_bot.git"
+  },
+  "keywords": [
+    "twitch",
+    "bot"
+  ],
+  "author": "Bjørnar Hetlesæther",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Bjornar97/rendogtv_viewers_bot/issues"
+  },
+  "homepage": "https://github.com/Bjornar97/rendogtv_viewers_bot#readme",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "tmi.js": "^1.5.0"
+  }
+}
