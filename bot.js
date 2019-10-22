@@ -34,8 +34,15 @@ client.on("connected", onConnectedHandler);
 // Connect to Twitch:
 client.connect();
 
+let first = true;
+
 // Called every time a message comes in
 function onMessageHandler(target, context, msg, self) {
+  if (first) {
+    client.say(target, "/color green");
+    first = false;
+  }
+  
   if (self) {
     return;
   } // Ignore messages from the bot
@@ -114,7 +121,7 @@ function onMessageHandler(target, context, msg, self) {
     const num = rollDice();
     client.say(target, `You rolled a ${num}`);
   } else if (commandName === "!how") {
-    client.say(target, "I have 2 commands: \"!here <action>\" to tell rendog you are in his sack and chat. Action is optional and can be \"fight\" or \"mine\". You need to be a subscriber to use this command | \"!dice\" to roll a dice and see what you get ");
+    client.say(target, "I have 2 commands: ¤ \"!here <action>\" to tell rendog you are in his sack and chat. Action is optional and can be \"fight\" or \"mine\". You need to be a subscriber to use this command | ¤ \"!dice\" to roll a dice and see what you get ");
   } else {
     console.log(`* Unknown command ${commandName}`);
   } 
