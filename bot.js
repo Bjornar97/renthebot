@@ -119,7 +119,7 @@ function onMessageHandler(target, context, msg, self) {
     }
   } else if (commandName === "!dice") {
     const num = rollDice();
-    client.say(target, `You rolled a ${num}`);
+    client.say(target, `@${context["display-name"]} You rolled a ${num}`);
   } else if (commandName === "!how") {
     client.say(target, "I have 2 commands: ¤ \"!here <action>\" to tell rendog you are in his sack and chat. Action is optional and can be \"fight\" or \"mine\". You need to be a subscriber to use this command | ¤ \"!dice\" to roll a dice and see what you get ");
   } else {
