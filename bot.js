@@ -139,6 +139,8 @@ function onMessageHandler(target, context, msg, self) {
           saveGoing = false;
         }, 5000);
       }
+    } else {
+      client.say(target, `@${context["display-name"]} Usage: "!mcname <your mc-name>" This way you can tell rendog that your mc-name is different from your twitch name`);
     }
   } else if (commandName === "!removemcname") {
     mcnames[context["display-name"]] = null;
@@ -177,8 +179,10 @@ function onMessageHandler(target, context, msg, self) {
     const num = rollDice();
     client.say(target, `@${context["display-name"]} You rolled a ${num}`);
   } else if (commandName === "!how") {
-    client.say(target, `I have 3 commands: ¤ \"!here <action>\" to tell rendog you are in his sack and chat. Action is optional and can be \"fight\", \"cauldron\" or \"mine\". 
-                        You need to be a subscriber to use this command | ¤ \"!leave\" to remove yourself from the list so you dont get used | ¤ \"!dice\" to roll a dice and see what you get `);
+    client.say(target, `I have 4 commands: ¤ \"!here <action>\" to tell rendog you are in his sack and chat. Action is optional and can be \"fight\", \"cauldron\" or \"mine\". 
+                        You need to be a subscriber to use this command | ¤ \"!leave\" to remove yourself from the list so you dont get used 
+                        | ¤ "!mcname <your Minecraft-name>" to tell rendog your minecraft-name is different from your twitch name. MC-NAMES ARE CASE SENSITIVE!
+                        | ¤ \"!dice\" to roll a dice and see what you get `);
   } else if (commandName === "!modhow") {
     client.say(target, `Mods can use these commands: ¤ "!reset" to delete everyone from the list, use with caution | ¤ "!remove <name>" to remove a specific user from the list, you can use @`);
   } else {
