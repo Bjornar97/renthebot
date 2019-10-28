@@ -36,11 +36,16 @@ client.on("connected", onConnectedHandler);
 client.connect();
 
 let first = true;
+let mcnames = {};
 
-const mcnamesFile = import('./mcnames.json');
-let mcnames = [];
-if (mcnamesFile) {
-  mcnames = JSON.parse(mcnamesFile);
+try {
+  if (fs.existsSync("./mcnames.json")) {
+    const mcnamesFile = fs.readFileSync("./mcnames.json");
+    mcnames = JSON.parse(mcnamesFile);
+  }
+} catch (error) {
+  console.log("Error while reading file");
+  console.dir(error);
 }
 
 // Called every time a message comes in
@@ -122,7 +127,11 @@ function onMessageHandler(target, context, msg, self) {
   } else if (commandName === "!mcname") {
     let name = commandArray[1];
     if (name) {
+      const coll = db.collection("subs");
       mcnames[context["display-name"]] = {twitchname: context["display-name"], mcname: name};
+      coll.doc(context["display-name"]).update({mcname: name}).catch((error) => {
+        console.log("Error whle adding mcname");
+      });
       if (!saveGoing) {
         saveGoing = true;
         setTimeout(() => {
@@ -130,6 +139,16 @@ function onMessageHandler(target, context, msg, self) {
           saveGoing = false;
         }, 5000);
       }
+    }
+  } else if (commandName === "!removemcname") {
+    mcnames[context["display-name"]] = null;
+    db.collection("subs").doc(context["display-name"]).update({mcname: null});
+    if (!saveGoing) {
+      saveGoing = true;
+      setTimeout(() => {
+        writeMcNames(mcnames);
+        saveGoing = false;
+      }, 5000);
     }
   } else if (commandName === "!reset") {
     if (context.mod) {
@@ -168,7 +187,7 @@ function onMessageHandler(target, context, msg, self) {
 }
 
 function writeMcNames(names) {
-  const namesJSON = JSON.stringify(names)
+  const namesJSON = JSON.stringify(names);
   fs.writeFile('./mcnames.json', namesJSON, err => {
     if (err) {
         console.log('Error writing file', err)
