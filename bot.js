@@ -179,9 +179,9 @@ function onMessageHandler(target, context, msg, self) {
     const num = rollDice();
     client.say(target, `@${context["display-name"]} You rolled a ${num}`);
   } else if (commandName === "!how") {
-    client.say(target, `I have 4 commands: 
-                        ¤ \"!here <action>\" to tell rendog you are in his sack and chat. Action is optional and can be \"fight\", \"cauldron\" or \"mine\". 
-                        You must be a subscriber to use it | ¤ \"!leave\" so you dont get used
+    client.say(target, `Here are the available commands for subs: 
+                        | ¤ \"!here <action>\" to tell rendog you are in chat. Action is optional and can be \"fight\" or \"mine\"
+                        | ¤ \"!leave\" so you dont get used
                         | ¤ "!mcname <your Minecraft-name>" to tell rendog your minecraft-name is different from your twitch name. MC-NAMES ARE CASE SENSITIVE!`);
   } else if (commandName === "!modhow") {
     client.say(target, `Mods can use these commands: ¤ "!reset" to delete everyone from the list, use with caution | ¤ "!remove <name>" to remove a specific user from the list (you can use @)`);
