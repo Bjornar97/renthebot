@@ -70,7 +70,7 @@ function onMessageHandler(target, context, msg, self) {
               name: context["display-name"],
               months: context["badge-info"].subscriber,
               will: commandText.charAt(0).toUpperCase() + commandText.substring(1),
-              timestamp: admin.firestore.Timestamp.fromDate(new Date())
+              timestamp: Date.now()
             });
           } else {
             docref.set({
@@ -78,7 +78,7 @@ function onMessageHandler(target, context, msg, self) {
               months: context["badge-info"].subscriber,
               will: commandText.charAt(0).toUpperCase() + commandText.substring(1),
               selected: false,
-              timestamp: admin.firestore.Timestamp.fromDate(new Date())
+              timestamp: Date.now()
             });
           }
         })
@@ -99,6 +99,7 @@ function onMessageHandler(target, context, msg, self) {
           });
           client.say(target, output);
           registeredArray = [];
+          timeoutGoing = false;
           setTimeout(() => {
             client.say(target, "If you should be in the list, but arent, please run the command again.");
           }, 2000);
