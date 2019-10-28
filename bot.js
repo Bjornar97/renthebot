@@ -61,8 +61,6 @@ function onMessageHandler(target, context, msg, self) {
 
   // If the command is known, let's execute it
   if (commandName === "!here") {
-    let output = "You are here. ";
-    
     if (context.subscriber) {
       if (context["badge-info"].subscriber && context["badge-info"].subscriber != "") {
         const docref = db.collection("subs").doc(context["display-name"]);
@@ -71,21 +69,23 @@ function onMessageHandler(target, context, msg, self) {
             docref.update({
               name: context["display-name"],
               months: context["badge-info"].subscriber,
-              will: commandText.charAt(0).toUpperCase() + commandText.substring(1)
+              will: commandText.charAt(0).toUpperCase() + commandText.substring(1),
+              timestamp: admin.firestore.Timestamp.fromDate(new Date())
             });
           } else {
             docref.set({
               name: context["display-name"],
               months: context["badge-info"].subscriber,
               will: commandText.charAt(0).toUpperCase() + commandText.substring(1),
-              selected: false
+              selected: false,
+              timestamp: admin.firestore.Timestamp.fromDate(new Date())
             });
           }
         })
-        
 
         registeredArray.push(context["display-name"]);
       }
+
       if (!timeoutGoing) {
         timeoutGoing = true;
         setTimeout(() => {
@@ -106,6 +106,8 @@ function onMessageHandler(target, context, msg, self) {
       }
     }
     console.log(`* Executed ${commandName} command`);
+  } else if (commandName === "!leave") {
+    db.collection("subs").doc(name).delete();
   } else if (commandName === "!reset") {
     if (context.mod) {
       db.collection("subs").get().then((snapshot) => {
@@ -117,11 +119,26 @@ function onMessageHandler(target, context, msg, self) {
     } else {
       client.say(target, `@${context["display-name"]} You are not a mod, and does not have access to that command`);
     }
+  } else if (commandName === "!remove") {
+    if (!context.mod) {
+      client.say(`@${name} You are not a mod, and cannot use this command. To remove yourselft use !leave`);
+    } else {
+      let selectName = commandArray[1];
+      if (selectName.split("")[0] == "@") {
+        selectName = commandArray[1].substring(1);
+      }
+
+      db.collection("subs").doc(selectName).delete();
+      client.say(`Deleted ${selectName}`);
+    }
   } else if (commandName === "!dice") {
     const num = rollDice();
     client.say(target, `@${context["display-name"]} You rolled a ${num}`);
   } else if (commandName === "!how") {
-    client.say(target, "I have 2 commands: ¤ \"!here <action>\" to tell rendog you are in his sack and chat. Action is optional and can be \"fight\" or \"mine\". You need to be a subscriber to use this command | ¤ \"!dice\" to roll a dice and see what you get ");
+    client.say(target, `I have 2 commands: ¤ \"!here <action>\" to tell rendog you are in his sack and chat. Action is optional and can be \"fight\", \"cauldron\" or \"mine\". 
+                        You need to be a subscriber to use this command | ¤ \"!leave\" to remove yourself from the list so you dont get used ¤ \"!dice\" to roll a dice and see what you get `);
+  } else if (commandName === "!modhow") {
+    client.say(`Mods can use these commands: ¤ "!reset" to delete everyone from the list, use with caution | ¤ "!remove <name>" to remove a specific user from the list, you can use @`);
   } else {
     console.log(`* Unknown command ${commandName}`);
   } 
