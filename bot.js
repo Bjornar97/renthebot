@@ -1,7 +1,7 @@
 const tmi = require("tmi.js");
 var admin = require('firebase-admin');
 require("dotenv").config();
-
+const fs = require('fs');
 var serviceAccount = require("./adminKey.json");
 
 admin.initializeApp({
@@ -13,6 +13,7 @@ var db = admin.firestore();
 
 let registeredArray = [];
 let timeoutGoing = false;
+let saveGoing = false;
 
 // Define configuration options
 
@@ -35,6 +36,12 @@ client.on("connected", onConnectedHandler);
 client.connect();
 
 let first = true;
+
+const mcnamesFile = import('./mcnames.json');
+let mcnames = [];
+if (mcnamesFile) {
+  mcnames = JSON.parse(mcnamesFile);
+}
 
 // Called every time a message comes in
 function onMessageHandler(target, context, msg, self) {
@@ -70,7 +77,8 @@ function onMessageHandler(target, context, msg, self) {
               name: context["display-name"],
               months: context["badge-info"].subscriber,
               will: commandText.charAt(0).toUpperCase() + commandText.substring(1),
-              timestamp: Date.now()
+              timestamp: Date.now(),
+              mcname: mcnames[context["display-name"]].mcname
             });
           } else {
             docref.set({
@@ -78,7 +86,8 @@ function onMessageHandler(target, context, msg, self) {
               months: context["badge-info"].subscriber,
               will: commandText.charAt(0).toUpperCase() + commandText.substring(1),
               selected: false,
-              timestamp: Date.now()
+              timestamp: Date.now(),
+              mcname: mcnames[context["display-name"]].mcname
             });
           }
         })
@@ -109,6 +118,19 @@ function onMessageHandler(target, context, msg, self) {
     console.log(`* Executed ${commandName} command`);
   } else if (commandName === "!leave") {
     db.collection("subs").doc(context["display-name"]).delete();
+
+  } else if (commandName === "!mcname") {
+    let name = commandArray[1];
+    if (name) {
+      mcnames[context["display-name"]] = {twitchname: context["display-name"], mcname: name};
+      if (!saveGoing) {
+        saveGoing = true;
+        setTimeout(() => {
+          writeMcNames(mcnames);
+          saveGoing = false;
+        }, 5000);
+      }
+    }
   } else if (commandName === "!reset") {
     if (context.mod) {
       db.collection("subs").get().then((snapshot) => {
@@ -143,6 +165,17 @@ function onMessageHandler(target, context, msg, self) {
   } else {
     console.log(`* Unknown command ${commandName}`);
   } 
+}
+
+function writeMcNames(names) {
+  const namesJSON = JSON.stringify(names)
+  fs.writeFile('./mcnames.json', namesJSON, err => {
+    if (err) {
+        console.log('Error writing file', err)
+    } else {
+        console.log('Successfully wrote file')
+    }
+})
 }
 
 function rollDice () {
