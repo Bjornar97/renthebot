@@ -135,7 +135,7 @@ function onMessageHandler(target, context, msg, self) {
     const num = rollDice();
     client.say(target, `@${context["display-name"]} You rolled a ${num}`);
   } else if (commandName === "!how") {
-    client.say(target, `I have 2 commands: ¤ \"!here <action>\" to tell rendog you are in his sack and chat. Action is optional and can be \"fight\", \"cauldron\" or \"mine\". 
+    client.say(target, `I have 3 commands: ¤ \"!here <action>\" to tell rendog you are in his sack and chat. Action is optional and can be \"fight\", \"cauldron\" or \"mine\". 
                         You need to be a subscriber to use this command | ¤ \"!leave\" to remove yourself from the list so you dont get used ¤ \"!dice\" to roll a dice and see what you get `);
   } else if (commandName === "!modhow") {
     client.say(`Mods can use these commands: ¤ "!reset" to delete everyone from the list, use with caution | ¤ "!remove <name>" to remove a specific user from the list, you can use @`);
