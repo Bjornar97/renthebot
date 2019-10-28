@@ -77,13 +77,17 @@ function onMessageHandler(target, context, msg, self) {
       if (context["badge-info"].subscriber && context["badge-info"].subscriber != "") {
         const docref = db.collection("subs").doc(context["display-name"]);
         docref.get().then((doc) => {
+          let mcname = "";
+            if (mcnames[context["display-name"]]) {
+              mcname = mcnames[context["display-name"]].mcname;
+            }
           if (doc.exists) {
             docref.update({
               name: context["display-name"],
               months: context["badge-info"].subscriber,
               will: commandText.charAt(0).toUpperCase() + commandText.substring(1),
               timestamp: Date.now(),
-              mcname: mcnames[context["display-name"]].mcname
+              mcname: mcname
             });
           } else {
             docref.set({
@@ -92,7 +96,7 @@ function onMessageHandler(target, context, msg, self) {
               will: commandText.charAt(0).toUpperCase() + commandText.substring(1),
               selected: false,
               timestamp: Date.now(),
-              mcname: mcnames[context["display-name"]].mcname
+              mcname: mcname
             });
           }
         })
@@ -182,7 +186,7 @@ function onMessageHandler(target, context, msg, self) {
     client.say(target, `Here are the available commands for subs: 
                         | ¤ \"!here <action>\" to tell rendog you are in chat. Action is optional and can be \"fight\" or \"mine\"
                         | ¤ \"!leave\" so you dont get used
-                        | ¤ "!mcname <your Minecraft-name>" to tell rendog your minecraft-name is different from your twitch name. MC-NAMES ARE CASE SENSITIVE!`);
+                        | ¤ "!mcname <minecraft-name>" to tell rendog your minecraft-name is different from your twitch name. MC-NAMES ARE CASE SENSITIVE!`);
   } else if (commandName === "!modhow") {
     client.say(target, `Mods can use these commands: ¤ "!reset" to delete everyone from the list, use with caution | ¤ "!remove <name>" to remove a specific user from the list (you can use @)`);
   } else {
