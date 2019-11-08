@@ -31,7 +31,6 @@ var db = admin.firestore();
 
 let registeredArray = [];
 let timeoutGoing = false;
-let saveGoing = false;
 
 // Define configuration options
 
@@ -66,13 +65,15 @@ let blameRenCount = 0;
 let badIdeaCount = 0;
 
 try {
-  if (fs.existsSync("./mcnames.json")) {
-    const mcnamesFile = fs.readFileSync("./mcnames.json");
-    mcnames = JSON.parse(mcnamesFile);
-  }
+  db.collection("mcnames")
+    .get()
+    .then(docs => {
+      docs.forEach(doc => {
+        mcnames[doc.twitch] = doc.mcname;
+      });
+    });
 } catch (error) {
-  console.log("Error while reading file");
-  console.dir(error);
+  console.log("error");
 }
 
 // Called every time a message comes in
@@ -167,24 +168,24 @@ function onMessageHandler(target, context, msg, self) {
   } else if (commandName === "!mcname") {
     let name = commandArray[1];
     if (name) {
-      const coll = db.collection("subs");
+      const subs = db.collection("subs");
+      const mcnames = db.collection("mcnames");
       mcnames[context["display-name"]] = {
         twitchname: context["display-name"],
         mcname: name
       };
-      coll
+
+      subs
         .doc(context["display-name"])
         .update({ mcname: name })
         .catch(error => {
           console.log("Error whle adding mcname");
         });
-      if (!saveGoing) {
-        saveGoing = true;
-        setTimeout(() => {
-          writeMcNames(mcnames);
-          saveGoing = false;
-        }, 5000);
-      }
+
+      mcnames.doc(context["display-name"]).set({
+        twitch: context["display-name"],
+        mcname: name
+      });
     } else {
       client.say(
         target,
@@ -198,13 +199,10 @@ function onMessageHandler(target, context, msg, self) {
     db.collection("subs")
       .doc(context["display-name"])
       .update({ mcname: null });
-    if (!saveGoing) {
-      saveGoing = true;
-      setTimeout(() => {
-        writeMcNames(mcnames);
-        saveGoing = false;
-      }, 5000);
-    }
+
+    db.collection("mcnames")
+      .doc(context["display-name"])
+      .delete();
   } else if (commandName === "!reset") {
     if (context.mod) {
       db.collection("subs")
@@ -236,10 +234,13 @@ function onMessageHandler(target, context, msg, self) {
         selectName = commandArray[1].substring(1);
       }
 
+      console.log("Name: " + selectName);
+
       db.collection("subs")
         .doc(selectName)
         .delete();
-      client.say(`Deleted ${selectName}`);
+
+      client.say(target, `Deleted ${selectName}`);
     }
   } else if (commandName === "!blameren") {
     blameRenCount += 1;
@@ -314,17 +315,6 @@ function onMessageHandler(target, context, msg, self) {
   } else {
     console.log(`* Unknown command ${commandName}`);
   }
-}
-
-function writeMcNames(names) {
-  const namesJSON = JSON.stringify(names);
-  fs.writeFile("./mcnames.json", namesJSON, err => {
-    if (err) {
-      console.log("Error writing file", err);
-    } else {
-      console.log("Successfully wrote file");
-    }
-  });
 }
 
 function rollDice() {
