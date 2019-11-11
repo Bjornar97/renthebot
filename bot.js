@@ -1,3 +1,4 @@
+("use strict");
 const tmi = require("tmi.js");
 var admin = require("firebase-admin");
 require("dotenv").config();
@@ -8,9 +9,6 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: "https://rendogtv-viewers-bot.firebaseio.com"
 });
-
-// For docker to work...
-("use strict");
 
 const express = require("express");
 
@@ -69,7 +67,7 @@ try {
     .get()
     .then(docs => {
       docs.forEach(doc => {
-        mcnames[doc.twitch] = doc.mcname;
+        mcnames[doc.data().twitch] = doc.data().mcname;
       });
     });
 } catch (error) {
@@ -110,7 +108,7 @@ function onMessageHandler(target, context, msg, self) {
         docref.get().then(doc => {
           let mcname = "";
           if (mcnames[context["display-name"]]) {
-            mcname = mcnames[context["display-name"]].mcname;
+            mcname = mcnames[context["display-name"]];
           }
           if (doc.exists) {
             docref.update({
@@ -180,6 +178,7 @@ function onMessageHandler(target, context, msg, self) {
         .update({ mcname: name })
         .catch(error => {
           console.log("Error whle adding mcname");
+          console.dir(error);
         });
 
       mcnames.doc(context["display-name"]).set({
@@ -268,7 +267,10 @@ function onMessageHandler(target, context, msg, self) {
       );
     }
   } else if (commandName === "!dice") {
-    const num = rollDice();
+    let num = rollDice();
+    if (context["display-name"] === "DTGKosh") {
+      num = 6;
+    }
     client.say(target, `@${context["display-name"]} You rolled a ${num}`);
   } else if (commandName === "!important") {
     console.log(msg);
@@ -284,6 +286,22 @@ function onMessageHandler(target, context, msg, self) {
         timestamp: Date.now()
       });
       console.log("Important message recieved");
+    }
+  } else if (commandName === "!removelastimportant") {
+    if (context.mod) {
+      try {
+        db.collection("important")
+          .where("from", "==", `@${context["display-name"]}`)
+          .orderBy("timestamp", "desc")
+          .get()
+          .then(snapshot => {
+            if (snapshot.docs.length != 0) {
+              snapshot.docs[0].ref.delete();
+            }
+          });
+      } catch (error) {
+        console.dir(error);
+      }
     }
   } else if (commandName === "!resetimportant") {
     if (context.mod) {
@@ -311,6 +329,21 @@ function onMessageHandler(target, context, msg, self) {
                     | ¤ "!remove <name>" to remove a specific user from the list (you can use @)
                     | ¤ "!important <message>" To inform rendog of something important. DO NOT ABUSE!
                     `
+    );
+  } else if (commandName === "!facecam") {
+    client.say(
+      target,
+      `@${
+        context["display-name"]
+      } Rendog does not use facecam this stream because hes chillin and its 13 C in his house, and therefore he is covered in blankets...`
+    );
+  } else if (commandName === "!pack") {
+    client.say(target, "!fun");
+  } else if (commandName === "!schedule") {
+    client.say(
+      target,
+      "Rendog's streaming-schedule is highly irregular, sometimes he gets caught up in hermitcraft and doesnt stream, " +
+        "and sometimes he streams a day which is not on his schedule.He tries however to stream Tuesdays, thursdays and sundays."
     );
   } else {
     console.log(`* Unknown command ${commandName}`);
