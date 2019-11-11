@@ -167,7 +167,7 @@ function onMessageHandler(target, context, msg, self) {
     let name = commandArray[1];
     if (name) {
       const subs = db.collection("subs");
-      const mcnames = db.collection("mcnames");
+      const mcnamescoll = db.collection("mcnames");
       mcnames[context["display-name"]] = {
         twitchname: context["display-name"],
         mcname: name
@@ -181,10 +181,11 @@ function onMessageHandler(target, context, msg, self) {
           console.dir(error);
         });
 
-      mcnames.doc(context["display-name"]).set({
+      mcnamescoll.doc(context["display-name"]).set({
         twitch: context["display-name"],
         mcname: name
       });
+      mcnames[context["display-name"]] = name;
     } else {
       client.say(
         target,
