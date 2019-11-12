@@ -1,8 +1,6 @@
-("use strict");
 const tmi = require("tmi.js");
 var admin = require("firebase-admin");
 require("dotenv").config();
-const fs = require("fs");
 var serviceAccount = require("./adminKey.json");
 
 admin.initializeApp({
@@ -10,22 +8,9 @@ admin.initializeApp({
   databaseURL: "https://rendogtv-viewers-bot.firebaseio.com"
 });
 
-const express = require("express");
-
-// Constants
-const PORT = 8085;
-const HOST = "0.0.0.0";
-
-// App
-const app = express();
-app.get("/", (req, res) => {
-  res.send("The bot is running\n");
-});
-
-app.listen(PORT, HOST);
-console.log(`Running on http://${HOST}:${PORT}`);
-
 var db = admin.firestore();
+const subsCollection = db.collection("subs");
+const rendogtvDoc = db.collection("channels").doc("rendogtv");
 
 let registeredArray = [];
 let timeoutGoing = false;
@@ -59,9 +44,6 @@ client.connect();
 let first = true;
 let mcnames = {};
 
-let blameRenCount = 0;
-let badIdeaCount = 0;
-
 try {
   db.collection("mcnames")
     .get()
@@ -92,263 +74,385 @@ function onMessageHandler(target, context, msg, self) {
     return;
   }
 
-  let commandText = "Any";
+  // TODO: Change this to include whole message
+  let argumentsArray = [];
+  let argumentsText = "Any";
   if (commandArray.length > 1) {
-    commandText = commandArray[1].trim();
+    argumentsArray = msg.split(" ");
+    argumentsArray.shift();
+    argumentsText = argumentsArray.join(" ");
   }
 
-  // If the command is known, let's execute it
-  if (commandName === "!here") {
-    if (context.subscriber) {
-      if (
-        context["badge-info"].subscriber &&
-        context["badge-info"].subscriber != ""
-      ) {
-        const docref = db.collection("subs").doc(context["display-name"]);
-        docref.get().then(doc => {
-          let mcname = "";
-          if (mcnames[context["display-name"]]) {
-            mcname = mcnames[context["display-name"]];
-          }
-          if (doc.exists) {
-            docref.update({
-              name: context["display-name"],
-              months: context["badge-info"].subscriber,
-              will:
-                commandText.charAt(0).toUpperCase() + commandText.substring(1),
-              timestamp: Date.now(),
-              mcname: mcname
-            });
-          } else {
-            docref.set({
-              name: context["display-name"],
-              months: context["badge-info"].subscriber,
-              will:
-                commandText.charAt(0).toUpperCase() + commandText.substring(1),
-              selected: false,
-              timestamp: Date.now(),
-              mcname: mcname
-            });
-          }
-        });
+  const displayName = context["display-name"];
+  let badgeInfo = context["badge-info"];
+  let months = null;
+  if (badgeInfo) {
+    months = badgeInfo.subscriber;
+  } else {
+    badgeInfo = {
+      subscriber: null
+    };
+  }
 
-        registeredArray.push(context["display-name"]);
+  switch (commandName) {
+    case "!here":
+      if (badgeInfo.subscriber && badgeInfo.subscriber != "") {
+        addSub(displayName, months, argumentsText);
+      } else {
+        send(target, `@${displayName} Only subs can use that command`);
       }
+      break;
 
-      if (!timeoutGoing) {
-        timeoutGoing = true;
-        setTimeout(() => {
-          let output = "Registered names: ";
-          let usedNames = [];
-          registeredArray.forEach(name => {
-            if (!usedNames.includes(name)) {
-              output += `@${name} `;
-              usedNames.push(name);
-            }
-          });
-          client.say(target, output);
-          registeredArray = [];
-          timeoutGoing = false;
-          setTimeout(() => {
-            client.say(
-              target,
-              "If you should be in the list, but arent, please run the command again."
-            );
-          }, 2000);
-        }, 20000);
+    case "!fight":
+      if (badgeInfo.subscriber && badgeInfo.subscriber != "") {
+        addSub(displayName, months, "fight");
+      } else {
+        send(target, `@${displayName} Only subs can use that command`);
       }
-    }
-    console.log(`* Executed ${commandName} command`);
-  } else if (commandName === "!leave") {
-    db.collection("subs")
-      .doc(context["display-name"])
-      .delete();
-  } else if (commandName === "!mcname") {
-    let name = commandArray[1];
-    if (name) {
-      const subs = db.collection("subs");
-      const mcnamescoll = db.collection("mcnames");
-      mcnames[context["display-name"]] = {
-        twitchname: context["display-name"],
-        mcname: name
-      };
+      break;
 
-      subs
-        .doc(context["display-name"])
-        .update({ mcname: name })
-        .catch(error => {
-          console.log("Error whle adding mcname");
-          console.dir(error);
-        });
-
-      mcnamescoll.doc(context["display-name"]).set({
-        twitch: context["display-name"],
-        mcname: name
-      });
-      mcnames[context["display-name"]] = name;
-    } else {
-      client.say(
-        target,
-        `@${
-          context["display-name"]
-        } Usage: "!mcname <your mc-name>" This way you can tell rendog that your mc-name is different from your twitch name. Minecraft names are CASE SENSITIVE!`
-      );
-    }
-  } else if (commandName === "!removemcname") {
-    mcnames[context["display-name"]] = null;
-    db.collection("subs")
-      .doc(context["display-name"])
-      .update({ mcname: null });
-
-    db.collection("mcnames")
-      .doc(context["display-name"])
-      .delete();
-  } else if (commandName === "!reset") {
-    if (context.mod) {
-      db.collection("subs")
-        .get()
-        .then(snapshot => {
-          snapshot.docs.forEach(doc => {
-            db.collection("subs")
-              .doc(doc.id)
-              .delete();
-          });
-        });
-      client.say(target, "Reset registered");
-    } else {
-      client.say(
-        target,
-        `@${
-          context["display-name"]
-        } You are not a mod, and does not have access to that command`
-      );
-    }
-  } else if (commandName === "!remove") {
-    if (!context.mod) {
-      client.say(
-        `@${name} You are not a mod, and cannot use this command. To remove yourselft use !leave`
-      );
-    } else {
-      let selectName = commandArray[1];
-      if (selectName.split("")[0] == "@") {
-        selectName = commandArray[1].substring(1);
+    case "!mine":
+      if (badgeInfo.subscriber && badgeInfo.subscriber != "") {
+        addSub(displayName, months, "fight");
+      } else {
+        send(target, `@${displayName} Only subs can use that command`);
       }
+      break;
 
-      console.log("Name: " + selectName);
+    case "!leave":
+      removeSub(displayName);
+      break;
 
-      db.collection("subs")
-        .doc(selectName)
-        .delete();
+    case "!mcname":
+      setMCName(displayName, argumentsArray[0]);
+      break;
 
-      client.say(target, `Deleted ${selectName}`);
-    }
-  } else if (commandName === "!blameren") {
-    blameRenCount += 1;
-    client.say(
-      target,
-      `Rendog has been blamed ${blameRenCount} times this stream`
-    );
-  } else if (commandName === "!resetblameren") {
-    if (context.mod) {
-      blameRenCount = 0;
-      client.say(
-        target,
-        `@${context["display-name"]} Blame ren has been reset`
-      );
-    }
-  } else if (commandName === "!badidea") {
-    badIdeaCount += 1;
-    client.say(target, `${badIdeaCount} people think that is a bad idea!`);
-  } else if (commandName === "!resetbadidea") {
-    if (context.mod) {
-      badIdeaCount = 0;
-      client.say(
-        target,
-        `@${context["display-name"]} Bad Idea Count has been reset`
-      );
-    }
-  } else if (commandName === "!dice") {
-    let num = rollDice();
-    if (context["display-name"] === "DTGKosh") {
-      num = 6;
-    }
-    client.say(target, `@${context["display-name"]} You rolled a ${num}`);
-  } else if (commandName === "!important") {
-    console.log(msg);
+    case "!removemcname":
+      removeMCName(displayName);
+      break;
 
-    if (context.mod) {
-      const textArray = msg.split(" ");
-      textArray.shift();
-      const text = textArray.join(" ");
-      db.collection("important").add({
-        from: `@${context["display-name"]}`,
-        color: context.color,
-        text: text,
-        timestamp: Date.now()
-      });
-      console.log("Important message recieved");
-    }
-  } else if (commandName === "!removelastimportant") {
-    if (context.mod) {
-      try {
-        db.collection("important")
-          .where("from", "==", `@${context["display-name"]}`)
-          .orderBy("timestamp", "desc")
-          .get()
-          .then(snapshot => {
-            if (snapshot.docs.length != 0) {
-              snapshot.docs[0].ref.delete();
-            }
-          });
-      } catch (error) {
-        console.dir(error);
+    case "!reset":
+      if (context.mod) {
+        resetSubs();
+      } else {
+        send(target, `@${displayName} Only mods can use the command "!reset"`);
       }
-    }
-  } else if (commandName === "!resetimportant") {
-    if (context.mod) {
-      db.collection("important")
-        .get()
-        .then(docs => {
-          docs.forEach(doc => {
-            doc.ref.delete();
-          });
-        });
-    }
-  } else if (commandName === "!how") {
-    client.say(
-      target,
-      `Here are the available commands for subs: 
+      break;
+
+    case "!remove":
+      if (context.mod) {
+        removeSub(argumentsArray[0]);
+      } else {
+        send(target, `@${displayName} Only mods can use the command "!remove"`);
+      }
+      break;
+
+    case "!blameren":
+      blame(target);
+      break;
+
+    case "!badidea":
+      badIdea(displayName);
+      break;
+
+    case "!resetblameren":
+      resetBlameRen();
+      break;
+
+    case "!resetbadidea":
+      resetBadIdea();
+      break;
+
+    case "!dice":
+      let num = rollDice();
+      if (context["display-name"] === "DTGKosh") {
+        num = 6;
+      }
+      send(target, `@${context["display-name"]} You rolled a ${num}`);
+      break;
+
+    case "!important":
+      if (context.mod) {
+        addImportant();
+      } else {
+        send(
+          target,
+          `@${displayName} Only mods can use the command "!important"`
+        );
+      }
+      break;
+
+    case "!removelastimportant":
+      if (context.mod) {
+        removeLastImportant();
+      } else {
+        send(
+          target,
+          `@${displayName} Only mods can use the command "!removelastimportant"`
+        );
+      }
+      break;
+
+    case "!resetimportant":
+      if (context.mod) {
+        resetImportant();
+      } else {
+        send(
+          target,
+          `@${displayName} Only mods can use the command "!resetimportant"`
+        );
+      }
+      break;
+
+    case "!how" || "!commands":
+      send(
+        target,
+        `Here are the available commands for subs: 
                         | ¤ \"!here <action>\" to tell rendog you are in chat. Action is optional and can be \"fight\" or \"mine\"
                         | ¤ \"!leave\" so you dont get used
                         | ¤ "!mcname <minecraft-name>" to tell rendog your minecraft-name is different from your twitch name. MC-NAMES ARE CASE SENSITIVE!`
-    );
-  } else if (commandName === "!modhow") {
-    client.say(
-      target,
-      `Mods can use these commands: 
+      );
+      break;
+
+    case "!modhow":
+      send(
+        target,
+        `Mods can use these commands: 
                     | ¤ "!reset" to delete everyone from the list, use with caution 
                     | ¤ "!remove <name>" to remove a specific user from the list (you can use @)
                     | ¤ "!important <message>" To inform rendog of something important. DO NOT ABUSE!
                     `
-    );
-  } else if (commandName === "!facecam") {
-    client.say(
-      target,
-      `@${
-        context["display-name"]
-      } Rendog does not use facecam this stream because hes chillin and its 13 C in his house, and therefore he is covered in blankets...`
-    );
-  } else if (commandName === "!pack") {
-    client.say(target, "!fun");
-  } else if (commandName === "!schedule") {
-    client.say(
-      target,
-      "Rendog's streaming-schedule is highly irregular, sometimes he gets caught up in hermitcraft and doesnt stream, " +
-        "and sometimes he streams a day which is not on his schedule.He tries however to stream Tuesdays, thursdays and sundays."
-    );
-  } else {
-    console.log(`* Unknown command ${commandName}`);
+      );
+      break;
+
+    case "!pack":
+      send(
+        target,
+        `@${displayName} This is FunCraft, a new modpack crafted by Iskall and his team, and creates a new way for viewers to interact with the streamer in-game, see more below`
+      );
+      send(target, "!fun");
+      break;
+
+    case "!schedule":
+      send(
+        target,
+        "Rendog's streaming-schedule is highly irregular, sometimes he gets caught up in hermitcraft and doesnt stream, " +
+          "and sometimes he streams a day which is not on his schedule.He tries however to stream Tuesdays, thursdays and sundays."
+      );
+      break;
+
+    case "!site":
+      send(
+        target,
+        "See the website where the magic happens: https://rendogtv-viewers-bot.web.app/"
+      );
+
+    default:
+      console.log(`Unknown command: ${commandName}`);
+      break;
   }
+}
+
+let sayQueue = [];
+
+function send(channel, message) {
+  console.log("Pushing: ");
+  console.dir({ channel, message });
+  sayQueue.push({ channel, message });
+}
+
+setInterval(() => {
+  if (sayQueue.length != 0) {
+    let messageObject = sayQueue.shift();
+    console.log(
+      `Saying: ${messageObject.message} in channel: ${messageObject.channel}`
+    );
+    client.say(messageObject.channel, messageObject.message);
+  }
+}, 1200);
+
+function addSub(displayName, months, task) {
+  try {
+    const docref = subsCollection.doc(displayName);
+    docref.get().then(doc => {
+      let mcname = "";
+      if (displayName) {
+        getMCName(displayName);
+      }
+      if (doc.exists) {
+        docref.update({
+          name: displayName,
+          months: months,
+          will: taks,
+          timestamp: Date.now(),
+          mcname: mcname
+        });
+      } else {
+        docref.set({
+          name: displayName,
+          months: months,
+          will: task,
+          selected: false,
+          timestamp: Date.now(),
+          mcname: mcname
+        });
+      }
+      registered(displayName);
+    });
+  } catch (error) {
+    console.log("ERROR:");
+    console.dir(error);
+  }
+}
+
+function registered(displayName) {
+  try {
+    registeredArray.push(displayName);
+    if (!timeoutGoing) {
+      timeoutGoing = true;
+      setTimeout(() => {
+        let output = "Registered subs: ";
+        registeredArray.forEach(name => {
+          output += `@${name} `;
+        });
+        say("rendogtv", output);
+        timeoutGoing = false;
+      }, 10000);
+    }
+  } catch (error) {
+    console.log("ERROR: ");
+    console.dir(error);
+  }
+}
+
+function removeSub(name) {
+  subsCollection.doc(name).delete();
+}
+
+function resetSubs() {
+  try {
+    db.collection("subs")
+      .get()
+      .then(snapshot => {
+        snapshot.docs.forEach(doc => {
+          db.collection("subs")
+            .doc(doc.id)
+            .delete();
+        });
+      });
+  } catch (error) {
+    console.log("ERROR: ");
+    console.dir(error);
+  }
+}
+
+function addImportant(displayName, color, message) {
+  try {
+    db.collection("important").add({
+      from: `@${displayName}`,
+      color: color,
+      text: message,
+      timestamp: Date.now()
+    });
+    console.log("Important message recieved");
+  } catch (error) {
+    console.log("ERROR: ");
+    console.dir(error);
+  }
+}
+
+function removeLastImportant(displayName) {
+  try {
+    db.collection("important")
+      .where("from", "==", `@${displayName}`)
+      .orderBy("timestamp", "desc")
+      .get()
+      .then(snapshot => {
+        if (snapshot.docs.length != 0) {
+          snapshot.docs[0].ref.delete();
+        }
+      });
+  } catch (error) {
+    console.log("ERROR: ");
+    console.dir(error);
+  }
+}
+
+function resetImportant() {
+  try {
+    db.collection("important")
+      .get()
+      .then(docs => {
+        docs.forEach(doc => {
+          doc.ref.delete();
+        });
+      });
+  } catch (error) {
+    console.log("ERROR: ");
+    console.dir(error);
+  }
+}
+
+async function blame(channelName) {
+  console.log("Going into blameren");
+  try {
+    let doc = await rendogtvDoc.get();
+    send("rendogtv", `${doc.data().blame + 1} have blamed Rendog`);
+    rendogtvDoc.update({ blame: admin.firestore.FieldValue.increment(1) });
+  } catch (error) {
+    console.log("ERROR: ");
+    console.dir(error);
+  }
+}
+
+async function badIdea(channelName) {
+  console.log("Going into badidea");
+  try {
+    const doc = await rendogtvDoc.get();
+    send("rendogtv", `${doc.data().badIdea + 1} thinks this is a bad idea.`);
+    rendogtvDoc.update({ badIdea: admin.firestore.FieldValue.increment(1) });
+  } catch (error) {
+    console.log("ERROR: ");
+    console.dir(error);
+  }
+}
+
+function resetBlameRen() {
+  blamers = [];
+  db.collection("channels")
+    .doc("rendogtv")
+    .update({ blame: 0 });
+}
+
+function resetBadIdea() {
+  badIdeers = [];
+  db.collection("channels")
+    .doc("rendogtv")
+    .update({ badIdea: 0 });
+}
+
+const MCNamesCollection = db.collection("mcnames");
+
+function setMCName(displayName, MCName) {
+  MCNamesCollection.doc(displayName).set({
+    twitch: displayName,
+    mcname: MCName
+  });
+  updateSubMCName(displayName, MCName);
+}
+
+function updateSubMCName(displayName, MCName) {
+  subsCollection.doc(displayName).update({ mcname: MCName });
+}
+
+async function getMCName(displayName) {
+  const doc = await MCNamesCollection.doc(displayName).get();
+  return doc.data().mcname;
+}
+
+function removeMCName(displayName) {
+  MCNamesCollection.doc(displayName).delete();
+  subsCollection.doc(displayName).update({ mcname: null });
 }
 
 function rollDice() {
