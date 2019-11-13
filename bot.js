@@ -163,7 +163,7 @@ function onMessageHandler(target, context, msg, self) {
       break;
 
     case "!badidea":
-      badIdea(displayName);
+      badIdea(target);
       break;
 
     case "!resetblameren":
