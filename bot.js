@@ -105,7 +105,7 @@ function onMessageHandler(target, context, msg, self) {
 
     case "!fight":
       if (badgeInfo.subscriber && badgeInfo.subscriber != "") {
-        addSub(displayName, months, "fight");
+        addSub(displayName, months, "Fight");
       } else {
         send(target, `@${displayName} Only subs can use that command`);
       }
@@ -113,7 +113,7 @@ function onMessageHandler(target, context, msg, self) {
 
     case "!mine":
       if (badgeInfo.subscriber && badgeInfo.subscriber != "") {
-        addSub(displayName, months, "fight");
+        addSub(displayName, months, "Fight");
       } else {
         send(target, `@${displayName} Only subs can use that command`);
       }
@@ -121,19 +121,26 @@ function onMessageHandler(target, context, msg, self) {
 
     case "!leave":
       removeSub(displayName);
+      send(target, `@${displayName} You have left, and removed from the list.`);
       break;
 
     case "!mcname":
       setMCName(displayName, argumentsArray[0]);
+      send(
+        target,
+        `@${displayName} Your minecraft-name "${argumentsArray[0]}" was added.`
+      );
       break;
 
     case "!removemcname":
       removeMCName(displayName);
+      send(target, `@${displayName} Your minecraft-name was removed.`);
       break;
 
     case "!reset":
       if (context.mod) {
         resetSubs();
+        send(target, `@${displayName} Sublist has been reset.`);
       } else {
         send(target, `@${displayName} Only mods can use the command "!reset"`);
       }
@@ -157,10 +164,12 @@ function onMessageHandler(target, context, msg, self) {
 
     case "!resetblameren":
       resetBlameRen();
+      send(target, `@${displayName} Blame Ren Count has been reset.`);
       break;
 
     case "!resetbadidea":
       resetBadIdea();
+      send(target, `@${displayName} Bad Idea Count has been reset.`);
       break;
 
     case "!dice":
@@ -173,7 +182,8 @@ function onMessageHandler(target, context, msg, self) {
 
     case "!important":
       if (context.mod) {
-        addImportant();
+        addImportant(displayName, context.color, argumentsText);
+        send(target, `@${displayName} The important message has been sent.`);
       } else {
         send(
           target,
@@ -185,6 +195,10 @@ function onMessageHandler(target, context, msg, self) {
     case "!removelastimportant":
       if (context.mod) {
         removeLastImportant();
+        send(
+          target,
+          `@${displayName} Last important message from you were removed.`
+        );
       } else {
         send(
           target,
@@ -204,7 +218,7 @@ function onMessageHandler(target, context, msg, self) {
       }
       break;
 
-    case "!how" || "!commands":
+    case "!commands":
       send(
         target,
         `Here are the available commands for subs: 
@@ -212,6 +226,26 @@ function onMessageHandler(target, context, msg, self) {
                         | ¤ \"!leave\" so you dont get used
                         | ¤ "!mcname <minecraft-name>" to tell rendog your minecraft-name is different from your twitch name. MC-NAMES ARE CASE SENSITIVE!`
       );
+      break;
+
+    case "!help":
+    case "!how":
+      send(
+        target,
+        `@${displayName} To start the tutoral write "!tutorial". For a list of commands, write "!commands"`
+      );
+      break;
+
+    case "!tutorial":
+      if (badgeInfo.subscriber) {
+        tutorial(displayName, true);
+      } else {
+        tutorial(displayName, false);
+      }
+      break;
+
+    case "!skip":
+      skipStep(displayName);
       break;
 
     case "!modhow":
@@ -228,9 +262,20 @@ function onMessageHandler(target, context, msg, self) {
     case "!pack":
       send(
         target,
-        `@${displayName} This is FunCraft, a new modpack crafted by Iskall and his team, and creates a new way for viewers to interact with the streamer in-game, see more below`
+        `@${displayName} This is FunCraft, a new modpack crafted by Iskall and his team, and creates a new way for viewers to interact with the streamer in-game, 
+         get the pack here: https://www.curseforge.com/minecraft/modpacks/funcraft-fc 
+         - Use "!fun" for more info.
+        `
       );
-      send(target, "!fun");
+      break;
+
+    case "!sos":
+    case "!sosafrica":
+      send(
+        target,
+        `Rendog is donating 10% of donations he gets from FunCraft to SOS Africa. 
+                    Check them out here: https://www.sosafrica.com/`
+      );
       break;
 
     case "!schedule":
@@ -246,6 +291,7 @@ function onMessageHandler(target, context, msg, self) {
         target,
         "See the website where the magic happens: https://rendogtv-viewers-bot.web.app/"
       );
+      break;
 
     default:
       console.log(`Unknown command: ${commandName}`);
@@ -273,6 +319,7 @@ setInterval(() => {
 
 function addSub(displayName, months, task) {
   try {
+    task = task.charAt(0).toUpperCase() + task.substring(1);
     const docref = subsCollection.doc(displayName);
     docref.get().then(doc => {
       let mcname = "";
@@ -283,7 +330,7 @@ function addSub(displayName, months, task) {
         docref.update({
           name: displayName,
           months: months,
-          will: taks,
+          will: task,
           timestamp: Date.now(),
           mcname: mcname
         });
@@ -298,6 +345,7 @@ function addSub(displayName, months, task) {
         });
       }
       registered(displayName);
+      done(displayName, 1);
     });
   } catch (error) {
     console.log("ERROR:");
@@ -315,13 +363,72 @@ function registered(displayName) {
         registeredArray.forEach(name => {
           output += `@${name} `;
         });
-        say("rendogtv", output);
+        send("rendogtv", output);
+        registeredArray = [];
         timeoutGoing = false;
       }, 10000);
     }
   } catch (error) {
     console.log("ERROR: ");
     console.dir(error);
+  }
+}
+
+let tutorialPeople = {};
+const steps = [
+  `
+  If your Minecraft-name is different from your twitch name, please use "!mcname your-minecraft-name".
+  To skip this step, use "!skip".
+  `,
+  `
+  To get yourself added to the list of subs, use "!here fight" if you wanna fight or "!here mine" if you wanna mine for Rendog. 
+  To skip this step, use "!skip".
+  `,
+  `If you are leaving the stream at any point, please use the "!leave" command to remove yourself from the list`,
+  `You are done! To see yourself on the website go to: https://rendogtv-viewers-bot.web.app/`
+];
+
+function tutorial(displayName, sub = undefined) {
+  console.dir(tutorialPeople);
+  console.log("Tutorial for " + displayName);
+  let step = 0;
+  const person = tutorialPeople[displayName];
+  console.dir(person);
+  if (person) {
+    step = person.step;
+    sub = person.sub;
+  } else {
+    tutorialPeople[displayName] = {
+      step: 0,
+      sub: sub
+    };
+  }
+
+  console.log("Step: " + step);
+  console.dir(tutorialPeople[displayName]);
+
+  if (!sub && step === 1) step = 2;
+
+  send("rendogtv", `@${displayName} ${steps[step]}`);
+
+  if (tutorialPeople[displayName].step >= steps.length) {
+    delete tutorialPeople[displayName];
+  } else {
+    tutorialPeople[displayName].step += 1;
+  }
+}
+
+function skipStep(displayName) {
+  if (tutorialPeople[displayName]) {
+    tutorial(displayName);
+  }
+}
+
+function done(displayName, step) {
+  if (tutorialPeople[displayName]) {
+    if (tutorialPeople[displayName].step === step + 1) {
+      tutorial(displayName);
+    }
   }
 }
 
@@ -439,6 +546,9 @@ function setMCName(displayName, MCName) {
     mcname: MCName
   });
   updateSubMCName(displayName, MCName);
+  setTimeout(() => {
+    done(displayName, 0);
+  }, 500);
 }
 
 function updateSubMCName(displayName, MCName) {
