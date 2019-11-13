@@ -566,10 +566,15 @@ async function badIdea(channelName) {
 }
 
 function resetBlameRen() {
-  blamers = [];
   db.collection("channels")
     .doc("rendogtv")
     .update({ blame: 0 });
+}
+
+function resetBlameChat() {
+  db.collection("channels")
+    .doc("rendogtv")
+    .update({ blameChat: 0 });
 }
 
 function resetBadIdea() {
