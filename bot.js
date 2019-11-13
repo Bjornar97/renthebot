@@ -158,26 +158,56 @@ function onMessageHandler(target, context, msg, self) {
       blame(target);
       break;
 
+    case "!blamechat":
+      blameChat(target);
+      break;
+
     case "!badidea":
       badIdea(displayName);
       break;
 
     case "!resetblameren":
-      resetBlameRen();
-      send(target, `@${displayName} Blame Ren Count has been reset.`);
+      if (context.mod) {
+        resetBlameRen();
+        send(target, `@${displayName} Blame Ren Count has been reset.`);
+      } else {
+        send(
+          target,
+          `@${displayName} Only mods can use the "!reset..." commands`
+        );
+      }
+      break;
+
+    case "!resetblamechat":
+      if (context.mod) {
+        resetBlameChat();
+      } else {
+        send(
+          target,
+          `@${displayName} Only mods can use the "!reset..." commands`
+        );
+      }
       break;
 
     case "!resetbadidea":
-      resetBadIdea();
-      send(target, `@${displayName} Bad Idea Count has been reset.`);
+      if (context.mod) {
+        resetBadIdea();
+        send(target, `@${displayName} Bad Idea Count has been reset.`);
+      } else {
+        send(
+          target,
+          `@${displayName} Only mods can use the "!reset..." commands`
+        );
+      }
+
       break;
 
     case "!dice":
       let num = rollDice();
-      if (context["display-name"] === "DTGKosh") {
+      if (displayName === "DTGKosh") {
         num = 6;
       }
-      send(target, `@${context["display-name"]} You rolled a ${num}`);
+      send(target, `@${displayName} You rolled a ${num}`);
       break;
 
     case "!important":
@@ -384,7 +414,7 @@ const steps = [
   To get yourself added to the list of subs, use "!here fight" if you wanna fight or "!here mine" if you wanna mine for Rendog. 
   To skip this step, use "!skip".
   `,
-  `If you are leaving the stream at any point, please use the "!leave" command to remove yourself from the list`,
+  `If you are leaving the stream at any point, please use the "!leave" command to remove yourself from the list. Use "!skip" to go to next step.`,
   `You are done! To see yourself on the website go to: https://rendogtv-viewers-bot.web.app/`
 ];
 
@@ -504,8 +534,19 @@ async function blame(channelName) {
   console.log("Going into blameren");
   try {
     let doc = await rendogtvDoc.get();
-    send("rendogtv", `${doc.data().blame + 1} have blamed Rendog`);
+    send(channelName, `${doc.data().blame + 1} has blamed Rendog!`);
     rendogtvDoc.update({ blame: admin.firestore.FieldValue.increment(1) });
+  } catch (error) {
+    console.log("ERROR: ");
+    console.dir(error);
+  }
+}
+
+async function blameChat(channelName) {
+  try {
+    let doc = await rendogtvDoc.get();
+    send(channelName, `${doc.data().blameChat + 1} has blamed chat!`);
+    rendogtvDoc.update({ blameChat: admin.firestore.FieldValue.increment(1) });
   } catch (error) {
     console.log("ERROR: ");
     console.dir(error);
@@ -516,7 +557,7 @@ async function badIdea(channelName) {
   console.log("Going into badidea");
   try {
     const doc = await rendogtvDoc.get();
-    send("rendogtv", `${doc.data().badIdea + 1} thinks this is a bad idea.`);
+    send(channelName, `${doc.data().badIdea + 1} think that is a bad idea.`);
     rendogtvDoc.update({ badIdea: admin.firestore.FieldValue.increment(1) });
   } catch (error) {
     console.log("ERROR: ");
