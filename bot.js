@@ -441,10 +441,17 @@ function tutorial(displayName, sub = undefined) {
 
   send("rendogtv", `@${displayName} ${steps[step]}`);
 
+  if (step === 2) {
+    step += 1;
+    send("rendogtv", `@${displayName} ${steps[step]}`);
+  }
+
+  step += 1;
+
   if (tutorialPeople[displayName].step >= steps.length) {
     delete tutorialPeople[displayName];
   } else {
-    tutorialPeople[displayName].step += 1;
+    tutorialPeople[displayName].step = step;
   }
 }
 
