@@ -29,8 +29,6 @@ const opts = {
   channels: [process.env.CHANNEL_NAME]
 };
 
-console.dir(opts);
-
 // Create a client with our options
 const client = new tmi.client(opts);
 
@@ -222,6 +220,29 @@ function onMessageHandler(target, context, msg, self) {
       }
       break;
 
+    case "!vote":
+      if (argumentsText.trim().length > 1) {
+        send(
+          target,
+          `@${displayName} You need to supply exactly one letter, for example: "!vote A"`
+        );
+      } else {
+        if (!/^[A-Z]$/i.test(argumentsText.trim())) {
+          send(
+            target,
+            `@${displayName} You have to send a letter, for example "!vote A"`
+          );
+        } else {
+          vote(displayName, argumentsText.trim());
+        }
+      }
+
+      break;
+
+    case "!poll":
+      statePoll(displayName);
+      break;
+
     case "!removelastimportant":
       if (context.mod) {
         removeLastImportant();
@@ -329,23 +350,147 @@ function onMessageHandler(target, context, msg, self) {
   }
 }
 
+let activePollId = null;
+let pollData = null;
+
+db.collection("polls")
+  .where("inProgress", "==", true)
+  .where("deleted", "==", false)
+  .onSnapshot(snapshot => {
+    snapshot.docChanges().forEach(change => {
+      const data = change.doc.data();
+      console.log("type:");
+      console.dir(change.type);
+      switch (change.type) {
+        case "added":
+          activePollId = change.doc.id;
+          pollData = data;
+          statePoll();
+          break;
+
+        case "removed":
+          console.dir(data);
+          stateEndedPoll(change.doc.id);
+          activePollId = null;
+          pollData = null;
+          break;
+
+        default:
+          break;
+      }
+    });
+  });
+
+function statePoll(displayName = "") {
+  if (activePollId) {
+    let output = `Strawpoll started. "${pollData.question}" The options are: `;
+    pollData.options.forEach((option, index) => {
+      output += `${String.fromCharCode(index + 65)} - "${option}". `;
+    });
+    output += `Vote by writing "!vote 'letter'" where 'letter' is the coresponding option. For example "!vote A"`;
+    send("rendogtv", output);
+    send(
+      "rendogtv",
+      `To follow the votes, go to https://rendogtv-viewers-bot.web.app/poll/${activePollId}`
+    );
+  } else {
+    send("rendogtv", `@${displayName} No active strawpoll at the moment`);
+  }
+}
+
+function stateEndedPoll(id) {
+  let max = 0;
+  let total = 0;
+  let winners = [];
+  db.collection("polls")
+    .doc(id)
+    .get()
+    .then(doc => {
+      const data = doc.data();
+      data.result.forEach((res, index) => {
+        total += res;
+        if (res > max) {
+          max = res;
+          winners = [];
+          winners.push(index);
+        } else if (res === max) {
+          winners.push(index);
+        }
+      });
+      let output = "";
+      if (winners.length === 1) {
+        output = `The strawpoll has ended. The winner is option ${String.fromCharCode(
+          winners[0] + 65
+        )}: "${data.options[winners[0]]}" with ${max} votes (${Math.round(
+          (max / total) * 100
+        )}%)`;
+      } else {
+        output = `Strawpoll ended. It is a tie between `;
+        for (let i = 0; i < winners.length; i++) {
+          output += `${String.fromCharCode(winners[i] + 65)} - "${
+            data.options[winners[i]]
+          }"`;
+          if (i === winners.length - 2) {
+            output += " and ";
+          } else if (i !== winners.length - 1) {
+            output += ", ";
+          }
+        }
+        output += `, each with ${max} votes (${Math.round(
+          (max / total) * 100
+        )}%)`;
+
+        output += `. Details at https://rendogtv-viewers-bot.web.app/poll/${id}`;
+      }
+
+      send("rendogtv", output);
+    });
+}
+
 let sayQueue = [];
 
 function send(channel, message) {
-  console.log("Pushing: ");
-  console.dir({ channel, message });
   sayQueue.push({ channel, message });
 }
 
 setInterval(() => {
   if (sayQueue.length != 0) {
     let messageObject = sayQueue.shift();
-    console.log(
-      `Saying: ${messageObject.message} in channel: ${messageObject.channel}`
-    );
     client.say(messageObject.channel, messageObject.message);
   }
 }, 1200);
+
+function vote(displayName, letter) {
+  const code = letter.toUpperCase().charCodeAt(0) - 65;
+  if (activePollId) {
+    if (pollData.options.length > code) {
+      const doc = db
+        .collection("polls")
+        .doc(activePollId)
+        .collection("votes")
+        .doc(displayName);
+
+      doc.get().then(val => {
+        if (val.exists) {
+          doc.update({
+            vote: code
+          });
+        } else {
+          doc.set({
+            vote: letter.toUpperCase().charCodeAt(0) - 65
+          });
+        }
+      });
+    } else {
+      send(
+        "rendogtv",
+        `@${displayName} You voted for a non-existent option. Please pick a valid option, use "!poll" to get the options or visit https://rendogtv-viewers-bot.web.app/poll/${activePollId}`
+      );
+    }
+  } else {
+    send("rendogtv", `@${displayName} No active strawpoll at the moment`);
+  }
+}
 
 function addSub(displayName, months, task) {
   try {
