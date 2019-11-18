@@ -200,6 +200,13 @@ function onMessageHandler(target, context, msg, self) {
 
       break;
 
+    case "!playlist":
+      send(
+        target,
+        "This is the LoFi Beats on Spotify. Link: https://open.spotify.com/playlist/37i9dQZF1DWWQRwui0ExPn?si=nbSsUSOnSJeSxMZu7ZY3nQ"
+      );
+      break;
+
     case "!dice":
       let num = rollDice();
       if (displayName === "DTGKosh") {
