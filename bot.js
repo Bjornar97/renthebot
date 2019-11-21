@@ -716,7 +716,7 @@ async function rollDice(displayName) {
   send(
     "rendogtv",
     `@${displayName} You rolled a ${num}. Your average is ${Math.round(
-      total / numberOfRolls
+      (total / numberOfRolls) * 100
     ) / 100}`
   );
 }
