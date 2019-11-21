@@ -486,7 +486,6 @@ function addSub(displayName, months, task) {
     task = task.charAt(0).toUpperCase() + task.substring(1);
     const docref = subsCollection.doc(displayName);
     docref.get().then(doc => {
-      let mcname = "";
       if (displayName) {
         getMCName(displayName);
       }
@@ -495,8 +494,7 @@ function addSub(displayName, months, task) {
           name: displayName,
           months: months,
           will: task,
-          timestamp: Date.now(),
-          mcname: mcname
+          timestamp: Date.now()
         });
       } else {
         docref.set({
@@ -504,8 +502,7 @@ function addSub(displayName, months, task) {
           months: months,
           will: task,
           selected: false,
-          timestamp: Date.now(),
-          mcname: mcname
+          timestamp: Date.now()
         });
       }
       registered(displayName);
@@ -624,53 +621,6 @@ function resetSubs() {
   }
 }
 
-function addImportant(displayName, color, message) {
-  try {
-    db.collection("important").add({
-      from: `@${displayName}`,
-      color: color,
-      text: message,
-      timestamp: Date.now()
-    });
-    console.log("Important message recieved");
-  } catch (error) {
-    console.log("ERROR: ");
-    console.dir(error);
-  }
-}
-
-function removeLastImportant(displayName) {
-  try {
-    db.collection("important")
-      .where("from", "==", `@${displayName}`)
-      .orderBy("timestamp", "desc")
-      .get()
-      .then(snapshot => {
-        if (snapshot.docs.length != 0) {
-          snapshot.docs[0].ref.delete();
-        }
-      });
-  } catch (error) {
-    console.log("ERROR: ");
-    console.dir(error);
-  }
-}
-
-function resetImportant() {
-  try {
-    db.collection("important")
-      .get()
-      .then(docs => {
-        docs.forEach(doc => {
-          doc.ref.delete();
-        });
-      });
-  } catch (error) {
-    console.log("ERROR: ");
-    console.dir(error);
-  }
-}
-
 async function blame(channelName) {
   console.log("Going into blameren");
   try {
@@ -732,24 +682,13 @@ function setMCName(displayName, MCName) {
     twitch: displayName,
     mcname: MCName
   });
-  updateSubMCName(displayName, MCName);
   setTimeout(() => {
     done(displayName, 0);
   }, 500);
 }
 
-function updateSubMCName(displayName, MCName) {
-  subsCollection.doc(displayName).update({ mcname: MCName });
-}
-
-async function getMCName(displayName) {
-  const doc = await MCNamesCollection.doc(displayName).get();
-  return doc.data().mcname;
-}
-
 function removeMCName(displayName) {
   MCNamesCollection.doc(displayName).delete();
-  subsCollection.doc(displayName).update({ mcname: null });
 }
 
 function rollDice() {
