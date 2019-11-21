@@ -42,6 +42,8 @@ client.connect();
 let first = true;
 let mcnames = {};
 
+let todayMessage = "";
+
 try {
   db.collection("mcnames")
     .get()
@@ -61,9 +63,10 @@ function onMessageHandler(target, context, msg, self) {
     first = false;
   }
 
+  // Ignores messages from the bot
   if (self) {
     return;
-  } // Ignore messages from the bot
+  }
 
   const commandArray = msg.trim().split(" ");
 
@@ -93,6 +96,23 @@ function onMessageHandler(target, context, msg, self) {
   }
 
   switch (commandName) {
+    case "!hello":
+    case "!today":
+      send(target, `Welcome to the stream @${displayName}. ${todayMessage}`);
+      break;
+
+    case "!settoday":
+      if (context.mod) {
+        todayMessage = argumentsText;
+        send(target, `@${displayName} The message of today has been set.`);
+      } else {
+        send(
+          target,
+          `@${displayName} Only mods can use the command "!settoday"`
+        );
+      }
+      break;
+
     case "!here":
       if (badgeInfo.subscriber && badgeInfo.subscriber != "") {
         addSub(displayName, months, argumentsText);
@@ -215,18 +235,6 @@ function onMessageHandler(target, context, msg, self) {
       send(target, `@${displayName} You rolled a ${num}`);
       break;
 
-    case "!important":
-      if (context.mod) {
-        addImportant(displayName, context.color, argumentsText);
-        send(target, `@${displayName} The important message has been sent.`);
-      } else {
-        send(
-          target,
-          `@${displayName} Only mods can use the command "!important"`
-        );
-      }
-      break;
-
     case "!vote":
       if (argumentsText.trim().length > 1) {
         send(
@@ -248,32 +256,6 @@ function onMessageHandler(target, context, msg, self) {
 
     case "!poll":
       statePoll(displayName);
-      break;
-
-    case "!removelastimportant":
-      if (context.mod) {
-        removeLastImportant();
-        send(
-          target,
-          `@${displayName} Last important message from you were removed.`
-        );
-      } else {
-        send(
-          target,
-          `@${displayName} Only mods can use the command "!removelastimportant"`
-        );
-      }
-      break;
-
-    case "!resetimportant":
-      if (context.mod) {
-        resetImportant();
-      } else {
-        send(
-          target,
-          `@${displayName} Only mods can use the command "!resetimportant"`
-        );
-      }
       break;
 
     case "!commands":
