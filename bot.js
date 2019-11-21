@@ -482,9 +482,6 @@ function addSub(displayName, months, task) {
     task = task.charAt(0).toUpperCase() + task.substring(1);
     const docref = subsCollection.doc(displayName);
     docref.get().then(doc => {
-      if (displayName) {
-        getMCName(displayName);
-      }
       if (doc.exists) {
         docref.update({
           name: displayName,
