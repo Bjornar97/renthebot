@@ -228,11 +228,7 @@ function onMessageHandler(target, context, msg, self) {
       break;
 
     case "!dice":
-      let num = rollDice();
-      if (displayName === "DTGKosh") {
-        num = 6;
-      }
-      send(target, `@${displayName} You rolled a ${num}`);
+      rollDice(displayName);
       break;
 
     case "!vote":
@@ -691,9 +687,38 @@ function removeMCName(displayName) {
   MCNamesCollection.doc(displayName).delete();
 }
 
-function rollDice() {
+const usersCollection = db.collection("users");
+
+async function rollDice(displayName) {
   const sides = 6;
-  return Math.floor(Math.random() * sides) + 1;
+  const num = Math.floor(Math.random() * sides) + 1;
+  const docRef = usersCollection.doc(displayName);
+  const doc = await docRef.get();
+
+  let total;
+  let numberOfRolls;
+  if (doc.exists) {
+    total = doc.data().total + num;
+    numberOfRolls = doc.data().number + 1;
+    docRef.update({
+      total: admin.firestore.FieldValue.increment(num),
+      number: admin.firestore.FieldValue.increment(1)
+    });
+  } else {
+    docRef.set({
+      total: num,
+      number: 1
+    });
+    total = num;
+    numberOfRolls = 1;
+  }
+
+  send(
+    "rendogtv",
+    `@${displayName} You rolled a ${num}. Your average is ${Math.round(
+      total / numberOfRolls
+    ) / 100}`
+  );
 }
 
 // Called every time the bot connects to Twitch chat
