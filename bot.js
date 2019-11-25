@@ -445,15 +445,6 @@ function onMessageHandler(target, context, msg, self) {
       );
       break;
 
-    case "!sos":
-    case "!sosafrica":
-      send(
-        target,
-        `Rendog is donating 10% of donations he gets from FunCraft to SOS Africa. 
-                    Check them out here: https://www.sosafrica.com/`
-      );
-      break;
-
     case "!schedule":
       send(
         target,
