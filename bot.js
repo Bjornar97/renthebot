@@ -15,8 +15,10 @@ const rendogtvDoc = db.collection("channels").doc("rendogtv");
 let registeredArray = [];
 let timeoutGoing = false;
 
-// Define configuration options
+let cooldown = 120;
+let userDiceTimestamp = {};
 
+// Define configuration options
 const opts = {
   identity: {
     username: process.env.BOT_USERNAME,
@@ -31,6 +33,8 @@ const opts = {
 
 // Create a client with our options
 const client = new tmi.client(opts);
+
+client.whisper("bjornar97", "test");
 
 // Register our event handlers (defined below)
 client.on("message", onMessageHandler);
@@ -55,6 +59,9 @@ try {
 } catch (error) {
   console.log("error");
 }
+
+// Timer
+let timer = {};
 
 // Called every time a message comes in
 function onMessageHandler(target, context, msg, self) {
@@ -84,7 +91,8 @@ function onMessageHandler(target, context, msg, self) {
     argumentsText = argumentsArray.join(" ");
   }
 
-  const displayName = context["display-name"];
+  let displayName = context["display-name"];
+  const originalDisplayName = displayName;
   let badgeInfo = context["badge-info"];
   let months = null;
   if (badgeInfo) {
@@ -93,6 +101,12 @@ function onMessageHandler(target, context, msg, self) {
     badgeInfo = {
       subscriber: null
     };
+  }
+
+  if (argumentsArray[0]) {
+    if (argumentsArray[0].charAt(0) === "@") {
+      displayName = argumentsArray[0].substring(1);
+    }
   }
 
   switch (commandName) {
@@ -143,11 +157,17 @@ function onMessageHandler(target, context, msg, self) {
       break;
 
     case "!mcname":
-      setMCName(displayName, argumentsArray[0]);
-      send(
-        target,
-        `@${displayName} Your minecraft-name "${argumentsArray[0]}" was added.`
-      );
+      if (!argumentsArray[0]) {
+        send(target, `@${displayName} Usage: "!mcname your-minecraft-name"`);
+      } else if (argumentsArray[0].trim() === "") {
+        send(target, `@${displayName} Usage: "!mcname your-minecraft-name"`);
+      } else {
+        setMCName(displayName, argumentsArray[0]);
+        send(
+          target,
+          `@${displayName} Your minecraft-name "${argumentsArray[0]}" was added.`
+        );
+      }
       break;
 
     case "!removemcname":
@@ -220,6 +240,25 @@ function onMessageHandler(target, context, msg, self) {
 
       break;
 
+    case "!inline":
+      addToLine(displayName);
+      send(
+        target,
+        `@${displayName} You are now in line, if you know what im sayin!`
+      );
+      break;
+
+    case "!outofline":
+      removeFromLine(displayName);
+      send(target, `@${displayName} You left the line :(`);
+      break;
+
+    case "!line":
+      printLine();
+      break;
+
+    case "!song":
+    case "!music":
     case "!playlist":
       send(
         target,
@@ -227,8 +266,91 @@ function onMessageHandler(target, context, msg, self) {
       );
       break;
 
+    case "!donate":
+    case "!tip":
+      send(
+        target,
+        `To donate to Rendog: https://streamlabs.com/rendogtv/tip PS: If you donate 20$ or more, you will become a trader in-game.`
+      );
+      break;
+
     case "!dice":
-      rollDice(displayName);
+      let user = userDiceTimestamp[displayName];
+      console.dir(user);
+      if (user) {
+        if (user.time > Date.now()) {
+          if (user.warning) {
+            timeout(
+              target,
+              displayName,
+              "You are using the !dice command too often.",
+              Math.round(cooldown / 2)
+            );
+            userDiceTimestamp[displayName] = null;
+          } else {
+            userDiceTimestamp[displayName].warning = true;
+            send(
+              target,
+              `@${displayName} The dice command has a cooldown of ${cooldown}s. Please dont use it too often. [Warning]`
+            );
+          }
+        } else {
+          userDiceTimestamp[displayName] = {
+            time: Date.now() + cooldown * 1000,
+            warning: false
+          };
+
+          rollDice(displayName);
+        }
+      } else {
+        userDiceTimestamp[displayName] = {
+          time: Date.now() + cooldown * 1000,
+          warning: false
+        };
+        rollDice(displayName);
+      }
+
+      break;
+
+    case "!setcooldown":
+      if (context.mod) {
+        if (parseInt(argumentsArray[0]) != "NaN") {
+          cooldown = parseInt(argumentsArray[0]);
+          send(
+            target,
+            `@${displayName} Cooldown was set to ${argumentsArray[0]} seconds.`
+          );
+        } else {
+          send(
+            target,
+            `@${displayName} ${argumentsArray[0]} is not a valid number`
+          );
+        }
+      } else {
+        send(
+          target,
+          `@${displayName} Only mods can use the command "!setcooldown".`
+        );
+      }
+      break;
+
+    case "!beverage":
+      if (!argumentsArray[0]) {
+        send(target, `@${originalDisplayName} enjoys a tasty beverage!`);
+      } else {
+        let endString = "a tasty beverage";
+        if (argumentsArray[1]) {
+          endString = "";
+          for (let i = 1; i < argumentsArray.length; i++) {
+            const element = argumentsArray[i];
+            endString += " " + element;
+          }
+        }
+        send(
+          target,
+          `@${originalDisplayName} sends @${displayName} ${endString}`
+        );
+      }
       break;
 
     case "!vote":
@@ -257,10 +379,7 @@ function onMessageHandler(target, context, msg, self) {
     case "!commands":
       send(
         target,
-        `Here are the available commands for subs: 
-                        | ¤ \"!here <action>\" to tell rendog you are in chat. Action is optional and can be \"fight\" or \"mine\"
-                        | ¤ \"!leave\" so you dont get used
-                        | ¤ "!mcname <minecraft-name>" to tell rendog your minecraft-name is different from your twitch name. MC-NAMES ARE CASE SENSITIVE!`
+        `Commands: "!mcname your-minecraft-name", "!playlist", "!sos", "!donate, "!today", "!dice", "!blameren", "!blamechat", "!badidea", "!timer". Subs only: "!here", "!fight", "!mine"`
       );
       break;
 
@@ -285,14 +404,35 @@ function onMessageHandler(target, context, msg, self) {
       break;
 
     case "!modhow":
-      send(
-        target,
-        `Mods can use these commands: 
-                    | ¤ "!reset" to delete everyone from the list, use with caution 
-                    | ¤ "!remove <name>" to remove a specific user from the list (you can use @)
-                    | ¤ "!important <message>" To inform rendog of something important. DO NOT ABUSE!
-                    `
-      );
+    case "!mod":
+    case "!mods":
+      if (context.mod) {
+        console.log("Mod");
+        client.whisper(context.username, "test");
+        send(target, `@${displayName} Commands sent by whisper`);
+        const messages = [
+          "You as a moderator can use the following commands: ",
+          `"!setcooldown <number>" to change the cooldown of the !dice command.`,
+          `"!reset" to remove all subs from the fight/mine list`,
+          `"!resetblameren" resets the blameren count`,
+          `"!resetblamechat" and "!resetbadidea" works the same way as above.`,
+          `"!timer start" to start the timer.`,
+          `"!timer stop" to stop the timer`
+        ];
+        for (let i = 0; i < messages.length; i++) {
+          const message = messages[i];
+          setTimeout(() => {
+            console.log("sending whisper to " + displayName);
+            client.whisper(context.username, message).then(data => {
+              console.log("Success");
+              console.dir(data);
+            });
+          }, i * 1200);
+        }
+      } else {
+        send(target, `@${displayName} Only mods can see commands for mods.`);
+      }
+
       break;
 
     case "!pack":
@@ -321,12 +461,78 @@ function onMessageHandler(target, context, msg, self) {
           "and sometimes he streams a day which is not on his schedule.He tries however to stream Tuesdays, thursdays and sundays."
       );
       break;
+    case "!wiki":
+      send(
+        target,
+        `@${displayName} The Dogcraft wiki can be found here: https://wiki.dogcraft.net/`
+      );
+      break;
+
+    case "!timer":
+      switch (argumentsArray[0]) {
+        case "start":
+          if (context.mod) {
+            if (timer.start) {
+              send(
+                target,
+                `@${displayName} There is already a timer going. Please stop that one first.`
+              );
+            } else {
+              timer.start = Date.now();
+              send(target, `Timer started.`);
+            }
+          } else {
+            send(
+              target,
+              `@${displayName} Only mods can start and stop timers.`
+            );
+          }
+          break;
+
+        case "stop":
+          if (context.mod) {
+            if (timer.start == null) {
+              send(target, `@${displayName} There is no timer to stop.`);
+            } else {
+              const result = Date.now() - timer.start;
+              const timeString = convertMillisecToString(result);
+
+              timer.start = null;
+
+              send(target, `TIMER: Stopped, ${timeString}`);
+            }
+          } else {
+            send(
+              target,
+              `@${displayName} Only mods can start and stop timers.`
+            );
+          }
+          break;
+        default:
+          const result = Date.now() - timer.start;
+          const timeString = convertMillisecToString(result);
+          timer.start = null;
+          send(target, `TIMER: Current time: ${timeString}`);
+          break;
+      }
+      break;
 
     case "!site":
       send(
         target,
         "See the website where the magic happens: https://rendogtv-viewers-bot.web.app/"
       );
+      break;
+
+    case "!break":
+      if (context.mod) {
+        send(
+          target,
+          `RENDOG RENDOG RENDOG!!! Break time, ordered by @${displayName}`
+        );
+      } else {
+        send(target, `@${displayName} Only mods can use the command "!break".`);
+      }
       break;
 
     default:
@@ -344,8 +550,6 @@ db.collection("polls")
   .onSnapshot(snapshot => {
     snapshot.docChanges().forEach(change => {
       const data = change.doc.data();
-      console.log("type:");
-      console.dir(change.type);
       switch (change.type) {
         case "added":
           activePollId = change.doc.id;
@@ -365,6 +569,23 @@ db.collection("polls")
       }
     });
   });
+
+function convertMillisecToString(milliseconds) {
+  console.log(milliseconds);
+  const date = new Date(milliseconds);
+  const hrs =
+    date.getUTCHours() < 10 ? "0" + date.getUTCHours() : date.getUTCHours();
+  const min =
+    date.getUTCMinutes() < 10
+      ? "0" + date.getUTCMinutes()
+      : date.getUTCMinutes();
+  const sec =
+    date.getSeconds() < 10 ? "0" + date.getSeconds() : date.getSeconds();
+
+  return `${hrs !== "00" ? hrs + "h" : ""}${
+    hrs !== "00" || min !== "00" ? min + "m" : ""
+  }${sec}s`;
+}
 
 function statePoll(displayName = "") {
   if (activePollId) {
@@ -444,6 +665,10 @@ setInterval(() => {
     client.say(messageObject.channel, messageObject.message);
   }
 }, 1200);
+
+function timeout(channel, displayName, reason = "", time = 120) {
+  client.timeout(channel, displayName, time, reason);
+}
 
 function vote(displayName, letter) {
   const code = letter.toUpperCase().charCodeAt(0) - 65;
@@ -716,6 +941,30 @@ async function rollDice(displayName) {
       (total / numberOfRolls) * 100
     ) / 100}`
   );
+}
+
+function addToLine(displayName) {
+  rendogtvDoc.update({
+    line: admin.firestore.FieldValue.arrayUnion(displayName)
+  });
+}
+
+function removeFromLine(displayName) {
+  rendogtvDoc.update({
+    line: admin.firestore.FieldValue.arrayRemove(displayName)
+  });
+}
+
+async function printLine() {
+  const doc = await rendogtvDoc.get();
+  let string = "The following is in the line: ";
+  const line = doc.data().line;
+
+  line.forEach(displayName => {
+    string += `@${displayName} `;
+  });
+
+  send("rendogtv", string);
 }
 
 // Called every time the bot connects to Twitch chat
