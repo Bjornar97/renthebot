@@ -34,8 +34,6 @@ const opts = {
 // Create a client with our options
 const client = new tmi.client(opts);
 
-client.whisper("bjornar97", "test");
-
 // Register our event handlers (defined below)
 client.on("message", onMessageHandler);
 client.on("connected", onConnectedHandler);
@@ -407,8 +405,6 @@ function onMessageHandler(target, context, msg, self) {
     case "!mod":
     case "!mods":
       if (context.mod) {
-        console.log("Mod");
-        client.whisper(context.username, "test");
         send(target, `@${displayName} Commands sent by whisper`);
         const messages = [
           "You as a moderator can use the following commands: ",
@@ -423,10 +419,11 @@ function onMessageHandler(target, context, msg, self) {
           const message = messages[i];
           setTimeout(() => {
             console.log("sending whisper to " + displayName);
-            client.whisper(context.username, message).then(data => {
-              console.log("Success");
-              console.dir(data);
-            });
+            client
+              .raw(`PRIVMSG #${context.username} :/w ${message}`)
+              .catch(error => {
+                console.dir(error);
+              });
           }, i * 1200);
         }
       } else {
@@ -521,8 +518,6 @@ function onMessageHandler(target, context, msg, self) {
           target,
           `RENDOG RENDOG RENDOG!!! Break time, ordered by @${displayName}`
         );
-      } else {
-        send(target, `@${displayName} Only mods can use the command "!break".`);
       }
       break;
 
