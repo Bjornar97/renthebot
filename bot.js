@@ -120,38 +120,41 @@ function onMessageHandler(target, context, msg, self) {
       } else {
         send(
           target,
-          `@${displayName} Only mods can use the command "!settoday"`
+          `@${originalDisplayName} Only mods can use the command "!settoday"`
         );
       }
       break;
 
     case "!here":
       if (badgeInfo.subscriber && badgeInfo.subscriber != "") {
-        addSub(displayName, months, argumentsText);
+        addSub(originalDisplayName, months, argumentsText);
       } else {
-        send(target, `@${displayName} Only subs can use that command`);
+        send(target, `@${originalDisplayName} Only subs can use that command`);
       }
       break;
 
     case "!fight":
       if (badgeInfo.subscriber && badgeInfo.subscriber != "") {
-        addSub(displayName, months, "Fight");
+        addSub(originalDisplayName, months, "Fight");
       } else {
-        send(target, `@${displayName} Only subs can use that command`);
+        send(target, `@${originalDisplayName} Only subs can use that command`);
       }
       break;
 
     case "!mine":
       if (badgeInfo.subscriber && badgeInfo.subscriber != "") {
-        addSub(displayName, months, "Fight");
+        addSub(originalDisplayName, months, "Fight");
       } else {
-        send(target, `@${displayName} Only subs can use that command`);
+        send(target, `@${originalDisplayName} Only subs can use that command`);
       }
       break;
 
     case "!leave":
-      removeSub(displayName);
-      send(target, `@${displayName} You have left, and removed from the list.`);
+      removeSub(originalDisplayName);
+      send(
+        target,
+        `@${originalDisplayName} You have left, and removed from the list.`
+      );
       break;
 
     case "!mcname":
@@ -160,25 +163,28 @@ function onMessageHandler(target, context, msg, self) {
       } else if (argumentsArray[0].trim() === "") {
         send(target, `@${displayName} Usage: "!mcname your-minecraft-name"`);
       } else {
-        setMCName(displayName, argumentsArray[0]);
+        setMCName(originalDisplayName, argumentsArray[0]);
         send(
           target,
-          `@${displayName} Your minecraft-name "${argumentsArray[0]}" was added.`
+          `@${originalDisplayName} Your minecraft-name "${argumentsArray[0]}" was added.`
         );
       }
       break;
 
     case "!removemcname":
-      removeMCName(displayName);
-      send(target, `@${displayName} Your minecraft-name was removed.`);
+      removeMCName(originalDisplayName);
+      send(target, `@${originalDisplayName} Your minecraft-name was removed.`);
       break;
 
     case "!reset":
       if (context.mod) {
         resetSubs();
-        send(target, `@${displayName} Sublist has been reset.`);
+        send(target, `@${originalDisplayName} Sublist has been reset.`);
       } else {
-        send(target, `@${displayName} Only mods can use the command "!reset"`);
+        send(
+          target,
+          `@${originalDisplayName} Only mods can use the command "!reset"`
+        );
       }
       break;
 
@@ -186,7 +192,10 @@ function onMessageHandler(target, context, msg, self) {
       if (context.mod) {
         removeSub(argumentsArray[0]);
       } else {
-        send(target, `@${displayName} Only mods can use the command "!remove"`);
+        send(
+          target,
+          `@${originalDisplayName} Only mods can use the command "!remove"`
+        );
       }
       break;
 
@@ -205,11 +214,11 @@ function onMessageHandler(target, context, msg, self) {
     case "!resetblameren":
       if (context.mod) {
         resetBlameRen();
-        send(target, `@${displayName} Blame Ren Count has been reset.`);
+        send(target, `@${originalDisplayName} Blame Ren Count has been reset.`);
       } else {
         send(
           target,
-          `@${displayName} Only mods can use the "!reset..." commands`
+          `@${originalDisplayName} Only mods can use the "!reset..." commands`
         );
       }
       break;
@@ -220,7 +229,7 @@ function onMessageHandler(target, context, msg, self) {
       } else {
         send(
           target,
-          `@${displayName} Only mods can use the "!reset..." commands`
+          `@${originalDisplayName} Only mods can use the "!reset..." commands`
         );
       }
       break;
@@ -228,27 +237,27 @@ function onMessageHandler(target, context, msg, self) {
     case "!resetbadidea":
       if (context.mod) {
         resetBadIdea();
-        send(target, `@${displayName} Bad Idea Count has been reset.`);
+        send(target, `@${originalDisplayName} Bad Idea Count has been reset.`);
       } else {
         send(
           target,
-          `@${displayName} Only mods can use the "!reset..." commands`
+          `@${originalDisplayName} Only mods can use the "!reset..." commands`
         );
       }
 
       break;
 
     case "!inline":
-      addToLine(displayName);
+      addToLine(originalDisplayName);
       send(
         target,
-        `@${displayName} You are now in line, if you know what im sayin!`
+        `@${originalDisplayName} You are now in line, if you know what im sayin!`
       );
       break;
 
     case "!outofline":
-      removeFromLine(displayName);
-      send(target, `@${displayName} You left the line :(`);
+      removeFromLine(originalDisplayName);
+      send(target, `@${originalDisplayName} You left the line :(`);
       break;
 
     case "!line":
@@ -273,8 +282,7 @@ function onMessageHandler(target, context, msg, self) {
       break;
 
     case "!dice":
-      let user = userDiceTimestamp[displayName];
-      console.dir(user);
+      let user = userDiceTimestamp[originalDisplayName];
       if (user) {
         if (user.time > Date.now()) {
           if (user.warning) {
@@ -284,28 +292,28 @@ function onMessageHandler(target, context, msg, self) {
               "You are using the !dice command too often.",
               Math.round(cooldown / 2)
             );
-            userDiceTimestamp[displayName] = null;
+            userDiceTimestamp[originalDisplayName] = null;
           } else {
-            userDiceTimestamp[displayName].warning = true;
+            userDiceTimestamp[originalDisplayName].warning = true;
             send(
               target,
-              `@${displayName} The dice command has a cooldown of ${cooldown}s. Please dont use it too often. [Warning]`
+              `@${originalDisplayName} The dice command has a cooldown of ${cooldown}s. Please dont use it too often. [Warning]`
             );
           }
         } else {
-          userDiceTimestamp[displayName] = {
+          userDiceTimestamp[originalDisplayName] = {
             time: Date.now() + cooldown * 1000,
             warning: false
           };
 
-          rollDice(displayName);
+          rollDice(originalDisplayName);
         }
       } else {
-        userDiceTimestamp[displayName] = {
+        userDiceTimestamp[originalDisplayName] = {
           time: Date.now() + cooldown * 1000,
           warning: false
         };
-        rollDice(displayName);
+        rollDice(originalDisplayName);
       }
 
       break;
@@ -316,18 +324,18 @@ function onMessageHandler(target, context, msg, self) {
           cooldown = parseInt(argumentsArray[0]);
           send(
             target,
-            `@${displayName} Cooldown was set to ${argumentsArray[0]} seconds.`
+            `@${originalDisplayName} Cooldown was set to ${argumentsArray[0]} seconds.`
           );
         } else {
           send(
             target,
-            `@${displayName} ${argumentsArray[0]} is not a valid number`
+            `@${originalDisplayName} ${argumentsArray[0]} is not a valid number`
           );
         }
       } else {
         send(
           target,
-          `@${displayName} Only mods can use the command "!setcooldown".`
+          `@${originalDisplayName} Only mods can use the command "!setcooldown".`
         );
       }
       break;
@@ -355,16 +363,16 @@ function onMessageHandler(target, context, msg, self) {
       if (argumentsText.trim().length > 1) {
         send(
           target,
-          `@${displayName} You need to supply exactly one letter, for example: "!vote A"`
+          `@${originalDisplayName} You need to supply exactly one letter, for example: "!vote A"`
         );
       } else {
         if (!/^[A-Z]$/i.test(argumentsText.trim())) {
           send(
             target,
-            `@${displayName} You have to send a letter, for example "!vote A"`
+            `@${originalDisplayName} You have to send a letter, for example "!vote A"`
           );
         } else {
-          vote(displayName, argumentsText.trim());
+          vote(originalDisplayName, argumentsText.trim());
         }
       }
 
@@ -516,8 +524,10 @@ function onMessageHandler(target, context, msg, self) {
       if (context.mod) {
         send(
           target,
-          `RENDOG RENDOG RENDOG!!! Break time, ordered by @${displayName}`
+          `RENDOG RENDOG RENDOG!!! Break time, ordered by @${originalDisplayName}`
         );
+      } else {
+        client.deletemessage(target, context["id"]);
       }
       break;
 
