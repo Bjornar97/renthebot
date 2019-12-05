@@ -143,7 +143,7 @@ function onMessageHandler(target, context, msg, self) {
 
     case "!mine":
       if (badgeInfo.subscriber && badgeInfo.subscriber != "") {
-        addSub(originalDisplayName, months, "Fight");
+        addSub(originalDisplayName, months, "Mine");
       } else {
         send(target, `@${originalDisplayName} Only subs can use that command`);
       }
