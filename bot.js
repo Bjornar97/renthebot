@@ -61,6 +61,8 @@ try {
 // Timer
 let timer = {};
 
+let diceOn = true;
+
 // Called every time a message comes in
 function onMessageHandler(target, context, msg, self) {
   if (first) {
@@ -282,40 +284,41 @@ function onMessageHandler(target, context, msg, self) {
       break;
 
     case "!dice":
-      let user = userDiceTimestamp[originalDisplayName];
-      if (user) {
-        if (user.time > Date.now()) {
-          if (user.warning) {
-            timeout(
-              target,
-              displayName,
-              "You are using the !dice command too often.",
-              Math.round(cooldown / 2)
-            );
-            userDiceTimestamp[originalDisplayName] = null;
+      if (diceOn) {
+        let user = userDiceTimestamp[originalDisplayName];
+        if (user) {
+          if (user.time > Date.now()) {
+            if (user.warning) {
+              timeout(
+                target,
+                displayName,
+                "You are using the !dice command too often.",
+                Math.round(cooldown / 2)
+              );
+              userDiceTimestamp[originalDisplayName] = null;
+            } else {
+              userDiceTimestamp[originalDisplayName].warning = true;
+              send(
+                target,
+                `@${originalDisplayName} The dice command has a cooldown of ${cooldown}s. Please dont use it too often. [Warning]`
+              );
+            }
           } else {
-            userDiceTimestamp[originalDisplayName].warning = true;
-            send(
-              target,
-              `@${originalDisplayName} The dice command has a cooldown of ${cooldown}s. Please dont use it too often. [Warning]`
-            );
+            userDiceTimestamp[originalDisplayName] = {
+              time: Date.now() + cooldown * 1000,
+              warning: false
+            };
+
+            rollDice(originalDisplayName);
           }
         } else {
           userDiceTimestamp[originalDisplayName] = {
             time: Date.now() + cooldown * 1000,
             warning: false
           };
-
           rollDice(originalDisplayName);
         }
-      } else {
-        userDiceTimestamp[originalDisplayName] = {
-          time: Date.now() + cooldown * 1000,
-          warning: false
-        };
-        rollDice(originalDisplayName);
       }
-
       break;
 
     case "!setcooldown":
@@ -337,6 +340,20 @@ function onMessageHandler(target, context, msg, self) {
           target,
           `@${originalDisplayName} Only mods can use the command "!setcooldown".`
         );
+      }
+      break;
+
+    case "!diceon":
+      if (context.mod) {
+        diceOn = true;
+        send(target, "Dice is now enabled");
+      }
+      break;
+
+    case "!diceoff":
+      if (context.mod) {
+        diceOn = false;
+        send(target, "Dice is now disabled");
       }
       break;
 
