@@ -344,14 +344,14 @@ function onMessageHandler(target, context, msg, self) {
       break;
 
     case "!diceon":
-      if (context.mod) {
+      if (context.mod || originalDisplayName === "ilikekitties") {
         diceOn = true;
         send(target, "Dice is now enabled");
       }
       break;
 
     case "!diceoff":
-      if (context.mod) {
+      if (context.mod || originalDisplayName === "ilikekitties") {
         diceOn = false;
         send(target, "Dice is now disabled");
       }
@@ -541,7 +541,7 @@ function onMessageHandler(target, context, msg, self) {
       if (context.mod) {
         send(
           target,
-          `RENDOG RENDOG RENDOG!!! Break time, ordered by @${originalDisplayName}`
+          `RENDOG RENDOG RENDOG!!! Break time, ordered by @${displayName}`
         );
       } else {
         client.deletemessage(target, context["id"]);
