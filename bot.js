@@ -1,7 +1,7 @@
 const tmi = require("tmi.js");
-var admin = require("firebase-admin");
+const admin = require("firebase-admin");
 require("dotenv").config();
-var serviceAccount = require("./adminKey.json");
+const serviceAccount = require("./adminKey.json");
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -82,7 +82,6 @@ function onMessageHandler(target, context, msg, self) {
     return;
   }
 
-  // TODO: Change this to include whole message
   let argumentsArray = [];
   let argumentsText = "Any";
   if (commandArray.length > 1) {
