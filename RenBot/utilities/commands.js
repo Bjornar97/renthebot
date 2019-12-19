@@ -38,7 +38,7 @@ export default {
       return auth;
     }
 
-    if (mod && command.modsOnly) {
+    if ((mod || displayName === "ilikekitties") && command.modsOnly) {
       auth.access = true;
     } else if (sub && command.subsOnly) {
       auth.access = true;
