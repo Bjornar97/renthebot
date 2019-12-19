@@ -1,6 +1,7 @@
 import { db } from "./firestore";
 import users from "./users";
 import say from "../say";
+import strings from "./strings";
 
 const commandsCollection = db.collection("commands");
 
@@ -97,17 +98,21 @@ export default {
   },
   enableCommand(displayName, commandId) {
     if (commandId) {
-      commandId = commandId.toLowerCase();
+      commandId = strings.removeFirstSymbol(commandId.toLowerCase(), "!");
       const command = this.getCommand(commandId);
-      if (command.enabled) {
-        return `@${displayName} The "${commandId}" command is already enabled"`;
-      }
-      if (commandId === "disable" || commandId === "enable") {
-        return `@${displayName} You cannot enable the "${commandId}" command for obvious reasons.`;
-      }
       if (command) {
-        commandsCollection.doc(commandId).update({ enabled: true });
-        return `The "${commandId}" command is now enabled`;
+        if (command.enabled) {
+          return `@${displayName} The "${commandId}" command is already enabled"`;
+        }
+        if (commandId === "disable" || commandId === "enable") {
+          return `@${displayName} You cannot enable the "${commandId}" command for obvious reasons.`;
+        }
+        if (command) {
+          commandsCollection.doc(commandId).update({ enabled: true });
+          return `The "${commandId}" command is now enabled`;
+        } else {
+          return `@${displayName} The command ${commandId} does not exist`;
+        }
       } else {
         return `@${displayName} The command ${commandId} does not exist`;
       }
@@ -117,17 +122,21 @@ export default {
   },
   disableCommand(displayName, commandId) {
     if (commandId) {
-      commandId = commandId.toLowerCase();
+      commandId = strings.removeFirstSymbol(commandId.toLowerCase(), "!");
       const command = this.getCommand(commandId);
-      if (!command.enabled) {
-        return `@${displayName} The "${commandId}" command is already enabled"`;
-      }
-      if (commandId === "disable" || commandId === "enable") {
-        return `@${displayName} You cannot disable the "${commandId}" command for obvious reasons.`;
-      }
-      if (this.getCommand(commandId)) {
-        commandsCollection.doc(commandId).update({ enabled: false });
-        return `The "${commandId}" command is now enabled`;
+      if (command) {
+        if (!command.enabled) {
+          return `@${displayName} The "${commandId}" command is already enabled"`;
+        }
+        if (commandId === "disable" || commandId === "enable") {
+          return `@${displayName} You cannot disable the "${commandId}" command for obvious reasons.`;
+        }
+        if (this.getCommand(commandId)) {
+          commandsCollection.doc(commandId).update({ enabled: false });
+          return `The "${commandId}" command is now disabled`;
+        } else {
+          return `@${displayName} The command ${commandId} does not exist`;
+        }
       } else {
         return `@${displayName} The command ${commandId} does not exist`;
       }
@@ -163,6 +172,19 @@ export default {
 
     return output;
   },
+  getStaticCommand(commandName) {
+    const name = strings.removeFirstSymbol(commandName, "!");
+    const command = this.getCommand(name);
+    if (command) {
+      if (command.custom === false) {
+        return command;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  },
   setCooldown(commandId, duration) {
     if (commandId && duration) {
       commandId = commandId.trim();
@@ -176,20 +198,24 @@ export default {
       return `You need to supply command-name and duration. For example !setcooldown dice 120`;
     }
   },
-  updateCommands(type) {
+  updateCommands(type, tell = false) {
     commandsMap.forEach((value, key) => {
       if (value.availableTypes) {
-        if (value.availableTypes.includes(type)) {
-          this.enableCommand("Auto", key);
-        } else {
-          this.disableCommand("Auto", key);
+        if (value.availableTypes.length > 0) {
+          if (value.availableTypes.includes(type)) {
+            this.enableCommand("Auto", key);
+          } else {
+            this.disableCommand("Auto", key);
+          }
         }
       }
     });
-    say(
-      "rendogtv",
-      `We are now playing ${type} and my available commands have updated. Use !commands to get available commands.`
-    );
+    if (tell) {
+      say(
+        "rendogtv",
+        `We are now playing ${type} and my available commands have updated. Use !commands to get available commands.`
+      );
+    }
   }
 };
 
@@ -200,6 +226,7 @@ commandsCollection.onSnapshot(snapshot => {
       enabled: data.enabled,
       availableTypes: data.availableTypes,
       invisible: data.invisible,
+      response: data.response,
       cooldown: data.cooldown,
       modsOnly: data.modsOnly,
       subsOnly: data.subsOnly,
@@ -213,7 +240,7 @@ commandsCollection.onSnapshot(snapshot => {
         break;
 
       case "removed":
-        activeFeaturesMap.delete(id);
+        commandsMap.delete(id);
         break;
 
       default:

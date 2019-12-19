@@ -10,6 +10,7 @@ import blame from "./ChatFun/blames";
 import line from "./ChatFun/line";
 import beverage from "./ChatFun/beverage";
 import poll from "./Strawpolls/poll";
+import strings from "./utilities/strings";
 
 let first = true;
 
@@ -271,6 +272,13 @@ export default async function ChatHandler(channel, user, message, self) {
   if (!customMatch) {
     // Static commands
     // TODO: Implement this through firestore
+    const nameCommand = strings.removeFirstSymbol(commandName, "!");
+    const commandObject = commands.getStaticCommand(nameCommand);
+    if (commandObject !== null) {
+      auth = commands.auth(nameCommand, displayName, user.mod, user.subscriber);
+      if (auth.access) response = commandObject.response;
+      else if (auth.message) response = auth.message;
+    }
   }
 
   if (response !== null) {

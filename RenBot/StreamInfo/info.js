@@ -65,9 +65,11 @@ const sendRequest = () => {
       }
       if (live !== true) live = true;
       if (id !== stream._id) id = stream._id;
-      if (title !== stream.channel.status) {
+      if (title === null) {
+        if (knownType) commands.updateCommands(type(), false);
+      } else if (title !== stream.channel.status) {
         title = stream.channel.status;
-        if (knownType) commands.updateCommands(type());
+        if (knownType) commands.updateCommands(type(), true);
       }
       if (game !== stream.game) game = stream.game;
       if (viewers !== stream.viewers) viewers = stream.viewers;
