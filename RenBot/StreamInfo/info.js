@@ -10,7 +10,7 @@ let req = request.defaults({
   }
 });
 
-const url = "https://api.twitch.tv/kraken/streams/22186976";
+const url = "https://api.twitch.tv/kraken/streams/30600786";
 
 let knownType = false;
 
