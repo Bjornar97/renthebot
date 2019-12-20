@@ -2,6 +2,7 @@ import { db } from "./firestore";
 import users from "./users";
 import say from "../say";
 import strings from "./strings";
+import activeFeatures from "./activeFeatures";
 
 const commandsCollection = db.collection("commands");
 
@@ -199,22 +200,24 @@ export default {
     }
   },
   updateCommands(type, tell = false) {
-    commandsMap.forEach((value, key) => {
-      if (value.availableTypes) {
-        if (value.availableTypes.length > 0) {
-          if (value.availableTypes.includes(type)) {
-            this.enableCommand("Auto", key);
-          } else {
-            this.disableCommand("Auto", key);
+    if (activeFeatures.isEnabled("autoToggle")) {
+      commandsMap.forEach((value, key) => {
+        if (value.availableTypes) {
+          if (value.availableTypes.length > 0) {
+            if (value.availableTypes.includes(type)) {
+              this.enableCommand("Auto", key);
+            } else {
+              this.disableCommand("Auto", key);
+            }
           }
         }
+      });
+      if (tell) {
+        say(
+          "rendogtv",
+          `We are now playing ${type} and my available commands have updated. Use !commands to get available commands.`
+        );
       }
-    });
-    if (tell) {
-      say(
-        "rendogtv",
-        `We are now playing ${type} and my available commands have updated. Use !commands to get available commands.`
-      );
     }
   }
 };
