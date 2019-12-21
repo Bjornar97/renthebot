@@ -219,35 +219,48 @@ export default {
         );
       }
     }
+  },
+  restartListner() {
+    if (listner) {
+      listner();
+      startListner();
+      return "I have restarted command-listening";
+    }
   }
 };
 
-commandsCollection.onSnapshot(snapshot => {
-  snapshot.docChanges().forEach(value => {
-    const data = value.doc.data();
-    const object = {
-      enabled: data.enabled,
-      availableTypes: data.availableTypes,
-      invisible: data.invisible,
-      response: data.response,
-      cooldown: data.cooldown,
-      modsOnly: data.modsOnly,
-      subsOnly: data.subsOnly,
-      custom: data.custom
-    };
-    const id = value.doc.id;
-    switch (value.type) {
-      case "added":
-      case "modified":
-        commandsMap.set(id, object);
-        break;
+let listner;
 
-      case "removed":
-        commandsMap.delete(id);
-        break;
+startListner();
 
-      default:
-        break;
-    }
+function startListner() {
+  listner = commandsCollection.onSnapshot(snapshot => {
+    snapshot.docChanges().forEach(value => {
+      const data = value.doc.data();
+      const object = {
+        enabled: data.enabled,
+        availableTypes: data.availableTypes,
+        invisible: data.invisible,
+        response: data.response,
+        cooldown: data.cooldown,
+        modsOnly: data.modsOnly,
+        subsOnly: data.subsOnly,
+        custom: data.custom
+      };
+      const id = value.doc.id;
+      switch (value.type) {
+        case "added":
+        case "modified":
+          commandsMap.set(id, object);
+          break;
+
+        case "removed":
+          commandsMap.delete(id);
+          break;
+
+        default:
+          break;
+      }
+    });
   });
-});
+}

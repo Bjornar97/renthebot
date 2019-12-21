@@ -21,7 +21,7 @@ export default async function ChatHandler(channel, user, message, self) {
   }
 
   if (first) {
-    say(channel, "/color red");
+    say(channel, "/color Firebrick");
     first = false;
   }
 
@@ -262,6 +262,12 @@ export default async function ChatHandler(channel, user, message, self) {
       } else {
         response = `The stream is currently offline.`;
       }
+      break;
+
+    case "!restart":
+      auth = commands.auth("restart", displayName, user.mod, user.subscriber);
+      if (auth.access) response = commands.restartListner();
+      else if (auth.message) response = auth.message;
       break;
 
     default:
