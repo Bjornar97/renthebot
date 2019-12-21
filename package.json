@@ -1,6 +1,6 @@
 {
   "name": "rendogtv_viewers_bot",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Bot for rendog tv viewers",
   "main": "/RenBot/index.js",
   "private": true,

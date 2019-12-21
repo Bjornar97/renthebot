@@ -37,6 +37,11 @@ import WhisperHandler from "./whisperHandler";
 client.on("chat", ChatHandler);
 client.on("whisper", WhisperHandler);
 client.on("slowmode", chatSpeed.slowModeUpdate);
+client.on("connected", onConnectedHandler);
 
 // Connect to Twitch:
 client.connect();
+
+function onConnectedHandler(addr, port) {
+  console.log(`* I have a connection`);
+}

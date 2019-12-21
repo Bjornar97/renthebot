@@ -1,6 +1,7 @@
 import request from "request";
 import say from "../say";
 import commands from "../utilities/commands";
+import newStream from "./newStream";
 
 let req = request.defaults({
   headers: {
@@ -63,8 +64,14 @@ const sendRequest = () => {
           }
         }
       }
-      if (live !== true) live = true;
+
+      if (live !== true) {
+        live = true;
+        newStream.onNewStream();
+      }
+
       if (id !== stream._id) id = stream._id;
+
       if (title === null) {
         title = stream.channel.status;
         if (knownType) commands.updateCommands(type(), false);
@@ -72,8 +79,11 @@ const sendRequest = () => {
         title = stream.channel.status;
         if (knownType) commands.updateCommands(type(), true);
       }
+
       if (game !== stream.game) game = stream.game;
+
       if (viewers !== stream.viewers) viewers = stream.viewers;
+
       if (startedTime !== stream["created_at"])
         startedTime = stream["created_at"];
 

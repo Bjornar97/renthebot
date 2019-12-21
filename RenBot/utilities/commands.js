@@ -224,7 +224,7 @@ export default {
     if (listner) {
       listner();
       startListner();
-      return "I have restarted command-listening";
+      return "I have restarted command- and features-listening";
     }
   }
 };
@@ -241,6 +241,7 @@ function startListner() {
         enabled: data.enabled,
         availableTypes: data.availableTypes,
         invisible: data.invisible,
+        displayName: data.displayName,
         response: data.response,
         cooldown: data.cooldown,
         modsOnly: data.modsOnly,

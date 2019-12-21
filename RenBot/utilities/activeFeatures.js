@@ -5,25 +5,33 @@ let activeFeaturesMap = new Map();
 export default {
   isEnabled(id) {
     return activeFeaturesMap.get(id);
+  },
+  restartListner() {
+    listner();
+    startListner();
   }
 };
 
-db.collection("features").onSnapshot(snapshot => {
-  snapshot.docChanges().forEach(value => {
-    const enabled = value.doc.data().enabled;
-    const id = value.doc.id;
-    switch (value.type) {
-      case "added":
-      case "modified":
-        activeFeaturesMap.set(id, enabled);
-        break;
+let listner;
 
-      case "removed":
-        activeFeaturesMap.delete(id);
-        break;
+function startListner() {
+  db.collection("features").onSnapshot(snapshot => {
+    snapshot.docChanges().forEach(value => {
+      const enabled = value.doc.data().enabled;
+      const id = value.doc.id;
+      switch (value.type) {
+        case "added":
+        case "modified":
+          activeFeaturesMap.set(id, enabled);
+          break;
 
-      default:
-        break;
-    }
+        case "removed":
+          activeFeaturesMap.delete(id);
+          break;
+
+        default:
+          break;
+      }
+    });
   });
-});
+}

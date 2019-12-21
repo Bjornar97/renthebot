@@ -11,6 +11,7 @@ import line from "./ChatFun/line";
 import beverage from "./ChatFun/beverage";
 import poll from "./Strawpolls/poll";
 import strings from "./utilities/strings";
+import activeFeatures from "./utilities/activeFeatures.js";
 
 let first = true;
 
@@ -266,8 +267,10 @@ export default async function ChatHandler(channel, user, message, self) {
 
     case "!restart":
       auth = commands.auth("restart", displayName, user.mod, user.subscriber);
-      if (auth.access) response = commands.restartListner();
-      else if (auth.message) response = auth.message;
+      if (auth.access) {
+        activeFeatures.restartListner();
+        response = commands.restartListner();
+      } else if (auth.message) response = auth.message;
       break;
 
     default:
@@ -282,8 +285,17 @@ export default async function ChatHandler(channel, user, message, self) {
     const commandObject = commands.getStaticCommand(nameCommand);
     if (commandObject !== null) {
       auth = commands.auth(nameCommand, displayName, user.mod, user.subscriber);
-      if (auth.access) response = commandObject.response;
-      else if (auth.message) response = auth.message;
+      if (auth.access) {
+        if (commandObject.displayName) {
+          if (targetName) {
+            response = `@${targetName} ${commandObject.response}`;
+          } else {
+            response = `@${displayName} ${commandObject.response}`;
+          }
+        } else {
+          response = commandObject.response;
+        }
+      } else if (auth.message) response = auth.message;
     }
   }
 

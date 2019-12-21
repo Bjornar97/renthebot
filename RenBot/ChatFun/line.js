@@ -25,5 +25,8 @@ export default {
     });
 
     return string;
+  },
+  resetLine() {
+    rendogtvDoc.update({ line: [] });
   }
 };
