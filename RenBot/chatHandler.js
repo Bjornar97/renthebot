@@ -241,6 +241,12 @@ export default async function ChatHandler(channel, user, message, self) {
       else if (auth.message) response = auth.message;
       break;
 
+    case "!pollurl":
+      auth = commands.auth("pollurl", displayName, user.mod, user.subscriber);
+      if (auth.access) response = poll.getPollURL(displayName);
+      else if (auth.message) response = auth.message;
+      break;
+
     case "!commands":
       auth = commands.auth("commands", displayName, user.mod, user.subscriber);
       if (auth.access) response = commands.getCommands();

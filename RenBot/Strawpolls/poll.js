@@ -35,7 +35,7 @@ export default {
           }
         });
       } else {
-        return `@${displayName} You voted for a non-existent option. Please pick a valid option, use "!poll" to get the options or visit https://rendogtv-viewers-bot.web.app/poll/${activePollId}`;
+        return `@${displayName} You voted for a non-existent option. Please pick a valid option, use "!poll" to get the options or visit https://renthebot.web.app/ap`;
       }
     } else {
       return `@${displayName} No active strawpoll at the moment`;
@@ -47,8 +47,15 @@ export default {
     }
     let output = "";
     output += getPollOptions();
-    output += `Follow live votes: https://rendogtv-viewers-bot.web.app/poll/${activePollId}`;
+    output += `Use !pollurl for link to live votes`;
     return output;
+  },
+  getPollURL(displayName) {
+    if (!activePollId) {
+      return `@${displayName} No active strawpoll`;
+    }
+
+    return "Link to active poll: https://renthebot.web.app/ap";
   }
 };
 
@@ -93,16 +100,16 @@ function stateEndedPoll(id) {
         output += `, each with ${max} votes (${Math.round(
           (max / total) * 100
         )}%)`;
-
-        output += `. Details at https://rendogtv-viewers-bot.web.app/poll/${id}`;
       }
+      output += `. Details at https://renthebot.web.app/poll/${id}`;
 
       say("rendogtv", output);
     });
 }
 
 function getPollOptions() {
-  if (activePollId === null) return "No active strawpoll";
+  if (activePollId === null)
+    return "No active strawpoll. Previous strawpolls: https://renthebot.web.app/polls";
   let output = `${pollData.question} The options are: `;
   pollData.options.forEach((option, index) => {
     output += `${String.fromCharCode(index + 65)} - ${option} | `;
@@ -114,7 +121,7 @@ function getPollOptions() {
 function startPoll() {
   let output = `Strawpoll started. `;
   output += getPollOptions();
-  output += ". Use !pollurl to get a link to the live results.";
+  output += ". Live results: https://renthebot.web.app/ap";
   say("rendogtv", output);
 }
 
