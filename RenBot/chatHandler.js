@@ -68,31 +68,61 @@ export default async function ChatHandler(channel, user, message, self) {
   // Custom commands
   switch (commandName) {
     case "!here":
-      auth = commands.auth("here", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "here",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) subList.addSub(displayName, months, argumentsArray[0]);
       else if (auth.message) response = auth.message;
       break;
 
     case "!fight":
-      auth = commands.auth("fight", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "fight",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) subList.addSub(displayName, months, "Fight");
       else if (auth.message) response = auth.message;
       break;
 
     case "!mine":
-      auth = commands.auth("mine", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "mine",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) subList.addSub(displayName, months, "Mine");
       else if (auth.message) response = auth.message;
       break;
 
     case "!leave":
-      auth = commands.auth("leave", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "leave",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) subList.removeSub(displayName);
       else if (auth.message) response = auth.message;
       break;
 
     case "!mcname":
-      auth = commands.auth("mcname", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "mcname",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access)
         response = McName.setMCName(displayName, argumentsArray[0]);
       else if (auth.message) response = auth.message;
@@ -103,38 +133,69 @@ export default async function ChatHandler(channel, user, message, self) {
         "removemcname",
         displayName,
         user.mod,
-        user.subscriber
+        user.subscriber,
+        user["id"]
       );
       if (auth.access) response = McName.removeMCName(displayName);
       else if (auth.message) response = auth.message;
       break;
 
     case "!reset":
-      auth = commands.auth("reset", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "reset",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = subList.resetSubList();
       else if (auth.message) response = auth.message;
       break;
 
     case "!remove":
-      auth = commands.auth("remove", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "remove",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = subList.removeSub(displayName);
       else if (auth.message) response = auth.message;
       break;
 
     case "!blameren":
-      auth = commands.auth("blameren", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "blameren",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = await blame.blameRen();
       else if (auth.message) response = auth.message;
       break;
 
     case "!blamechat":
-      auth = commands.auth("blamechat", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "blamechat",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = await blame.blameChat();
       else if (auth.message) response = auth.message;
       break;
 
     case "!badidea":
-      auth = commands.auth("badidea", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "badidea",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = await blame.badIdea();
       else if (auth.message) response = auth.message;
       break;
@@ -144,7 +205,8 @@ export default async function ChatHandler(channel, user, message, self) {
         "resetblameren",
         displayName,
         user.mod,
-        user.subscriber
+        user.subscriber,
+        user["id"]
       );
       if (auth.access) response = blame.resetBlameRen();
       else if (auth.message) response = auth.message;
@@ -155,7 +217,8 @@ export default async function ChatHandler(channel, user, message, self) {
         "resetblamechat",
         displayName,
         user.mod,
-        user.subscriber
+        user.subscriber,
+        user["id"]
       );
       if (auth.access) response = blame.resetBlameChat();
       else if (auth.message) response = auth.message;
@@ -166,32 +229,57 @@ export default async function ChatHandler(channel, user, message, self) {
         "resetbadidea",
         displayName,
         user.mod,
-        user.subscriber
+        user.subscriber,
+        user["id"]
       );
       if (auth.access) response = blame.resetBadIdea();
       else if (auth.message) response = auth.message;
       break;
 
     case "!inline":
-      auth = commands.auth("inline", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "inline",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = line.addToLine(displayName);
       else if (auth.message) response = auth.message;
       break;
 
     case "!outofline":
-      auth = commands.auth("outofline", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "outofline",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = line.removeFromLine(displayName);
       else if (auth.message) response = auth.message;
       break;
 
     case "!line":
-      auth = commands.auth("line", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "line",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = await line.printLine();
       else if (auth.message) response = auth.message;
       break;
 
     case "!dice":
-      auth = commands.auth("dice", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "dice",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = await dice.rollDice(displayName);
       else if (auth.message) response = auth.message;
       break;
@@ -201,7 +289,8 @@ export default async function ChatHandler(channel, user, message, self) {
         "setcooldown",
         displayName,
         user.mod,
-        user.subscriber
+        user.subscriber,
+        user["id"]
       );
       if (auth.access)
         response = commands.setCooldown(argumentsArray[0], argumentsArray[1]);
@@ -209,46 +298,88 @@ export default async function ChatHandler(channel, user, message, self) {
       break;
 
     case "!enable":
-      auth = commands.auth("enable", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "enable",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access)
         response = commands.enableCommand(displayName, targetName);
       else if (auth.message) response = auth.message;
       break;
 
     case "!disable":
-      auth = commands.auth("disable", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "disable",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access)
         response = commands.disableCommand(displayName, targetName);
       else if (auth.message) response = auth.message;
       break;
 
     case "!beverage":
-      auth = commands.auth("beverage", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "beverage",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access)
         response = beverage.beverage(displayName, targetName, argumentsArray);
       else if (auth.message) response = auth.message;
       break;
 
     case "!vote":
-      auth = commands.auth("vote", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "vote",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = poll.vote(displayName, argumentsText.trim());
       else if (auth.message) response = auth.message;
       break;
 
     case "!poll":
-      auth = commands.auth("poll", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "poll",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = poll.getPoll(displayName);
       else if (auth.message) response = auth.message;
       break;
 
     case "!pollurl":
-      auth = commands.auth("pollurl", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "pollurl",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = poll.getPollURL(displayName);
       else if (auth.message) response = auth.message;
       break;
 
     case "!commands":
-      auth = commands.auth("commands", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "commands",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) response = commands.getCommands();
       else if (auth.message) response = auth.message;
       break;
@@ -272,7 +403,13 @@ export default async function ChatHandler(channel, user, message, self) {
       break;
 
     case "!restart":
-      auth = commands.auth("restart", displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        "restart",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) {
         activeFeatures.restartListner();
         response = commands.restartListner();
@@ -286,11 +423,16 @@ export default async function ChatHandler(channel, user, message, self) {
 
   if (!customMatch) {
     // Static commands
-    // TODO: Implement this through firestore
     const nameCommand = strings.removeFirstSymbol(commandName, "!");
     const commandObject = commands.getStaticCommand(nameCommand);
     if (commandObject !== null) {
-      auth = commands.auth(nameCommand, displayName, user.mod, user.subscriber);
+      auth = commands.auth(
+        nameCommand,
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
       if (auth.access) {
         if (commandObject.displayName) {
           if (targetName) {

@@ -26,7 +26,7 @@ export default {
    *
    * @returns An object that consist of "access"(boolean) and "message"(string or null)
    */
-  auth(commandId, displayName, mod, sub) {
+  auth(commandId, displayName, mod, sub, msgId) {
     let command = this.getCommand(commandId);
     if (!command) {
       return { access: true };
@@ -47,6 +47,9 @@ export default {
       auth.access = true;
     } else {
       auth.access = false;
+      if (command.modsOnly) {
+        users.deleteMessage(msgId);
+      }
     }
 
     if (auth.access) {
