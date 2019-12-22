@@ -52,7 +52,7 @@ export default {
   },
   getPollURL(displayName) {
     if (!activePollId) {
-      return `@${displayName} No active strawpoll`;
+      return `@${displayName} No active strawpoll. Previous strawpolls: https://renthebot.web.app/polls`;
     }
 
     return "Link to active poll: https://renthebot.web.app/ap";
