@@ -7,7 +7,9 @@ export default {
     return activeFeaturesMap.get(id);
   },
   restartListner() {
-    listner();
+    if (listner) {
+      listner();
+    }
     startListner();
   }
 };
@@ -35,3 +37,5 @@ function startListner() {
     });
   });
 }
+
+startListner();
