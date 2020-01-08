@@ -1,12 +1,12 @@
 {
   "name": "rendogtv_viewers_bot",
-  "version": "1.1.2",
+  "version": "2.1.1",
   "description": "Bot for rendog tv viewers",
-  "main": "bot.js",
+  "main": "/RenBot/index.js",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node bot.js"
+    "start": "node -r esm ./RenBot/index.js"
   },
   "repository": {
     "type": "git",
@@ -24,7 +24,10 @@
   "homepage": "https://github.com/Bjornar97/rendogtv_viewers_bot#readme",
   "dependencies": {
     "dotenv": "^8.2.0",
+    "esm": "^3.2.25",
     "firebase-admin": "^8.6.1",
+    "request": "^2.88.0",
     "tmi.js": "^1.5.0"
-  }
+  },
+  "devDependencies": {}
 }
