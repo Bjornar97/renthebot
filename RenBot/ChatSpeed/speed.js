@@ -16,10 +16,10 @@ export default {
     const slowFeature = features.isEnabled("autoslow");
     if (slowFeature) {
       if (Date.now() - lastUpdate > 5 * 60 * 1000) {
-        if (speed > 90 && (!slowEnabled || length !== 60)) {
+        if (speed > 60 && (!slowEnabled || length !== 60)) {
           say("rendogtv", "/slow 60");
           lastUpdate = Date.now();
-        } else if (speed > 60 && (!slowEnabled || length !== 30)) {
+        } else if (speed > 30 && (!slowEnabled || length !== 30)) {
           say("rendogtv", "/slow 30");
           lastUpdate = Date.now();
         } else if (slowEnabled) {
