@@ -103,6 +103,18 @@ export default async function ChatHandler(channel, user, message, self) {
       else if (auth.message) response = auth.message;
       break;
 
+    case "!blend":
+      auth = commands.auth(
+        "blend",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) subList.addSub(displayName, months, "Blend");
+      else if (auth.message) response = auth.message;
+      break;
+
     case "!leave":
       auth = commands.auth(
         "leave",
