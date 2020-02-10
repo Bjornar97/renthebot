@@ -4,6 +4,7 @@ import stringTools from "./utilities/strings";
 import info from "./StreamInfo/info";
 import subList from "./SubList/subList";
 import McName from "./McNames/McName";
+import ChatInteractions from "./ChatInteractions/chatResponse";
 import commands from "./utilities/commands";
 import dice from "./ChatFun/dice";
 import blame from "./ChatFun/blames";
@@ -26,8 +27,14 @@ export default async function ChatHandler(channel, user, message, self) {
     first = false;
   }
 
+  const displayName = user["display-name"];
+
   // Splitting the message into an array of words
   const commandArray = message.trim().split(" ");
+
+  const msgLower = message.toLowerCase();
+
+  ChatInteractions.smartResponse(msgLower, displayName);
 
   // Checking if the first letter is !, if not, returns
   const commandName = commandArray[0].trim().toLowerCase();
@@ -41,7 +48,6 @@ export default async function ChatHandler(channel, user, message, self) {
     argumentsArray.shift();
   }
 
-  const displayName = user["display-name"];
   let targetName;
   let badgeInfo = user["badge-info"];
   let months = null;

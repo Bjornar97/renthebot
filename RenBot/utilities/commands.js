@@ -203,19 +203,28 @@ export default {
     }
   },
   updateCommands(type, tell = false) {
+    console.log("AutoToggle: " + activeFeatures.isEnabled("autoToggle"));
     if (activeFeatures.isEnabled("autoToggle")) {
       commandsMap.forEach((value, key) => {
+        console.log(`Availabletypes for ${value.commandId}: `);
+        console.dir(value.availableTypes);
         if (value.availableTypes) {
+          console.log("Availabletypes is defined");
           if (value.availableTypes.length > 0) {
+            console.log("availabletypes length is above 0");
+            console.log("Type: " + type);
             if (value.availableTypes.includes(type)) {
+              console.log("Enabling");
               this.enableCommand("Auto", key);
             } else {
+              console.log("Disabling");
               this.disableCommand("Auto", key);
             }
           }
         }
       });
       if (tell) {
+        console.log("Telling chat");
         say(
           "rendogtv",
           `We are now playing ${type} and my available commands have updated. Use !commands to get available commands.`
