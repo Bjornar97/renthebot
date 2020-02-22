@@ -44,23 +44,47 @@ export default {
 
 const sendRequest = () => {
   req(url, (err, res, body) => {
-    body = JSON.parse(body);
+    let success = true;
+    try {
+      body = JSON.parse(body);
+      if (body == null || body == undefined) {
+        live = false;
+        return;
+      }
+      success = true;
+    } catch (error) {
+      console.dir(error);
+      success = false;
+    }
+    
     const stream = body.stream;
+    if (stream === undefined || success === false) {
+      console.log("Stream is undefined");
+      live = false;
+      return;
+    }
+
     if (stream === null) {
+      console.log("Stream is undefined");
       live = false;
     } else {
+      console.log("stream is not null");
       if (live === false) {
+        console.log("live was false");
         const prevStartTime = startedTime;
+        console.log("Prev start time: " + prevStartTime)
         const startTime = new Date(stream["created_at"]);
+        console.log(`Startime: ${startTime}, prevStartTime: ${prevStartTime}, diff: ${startTime - prevStartTime}`);
         if (startTime - prevStartTime > 60 * 60 * 1000) {
           const diff = Date.now() - startTime.getTime();
-          if (diff < 310 * 1000) {
+          if (diff < 600 * 1000) {
+            console.log("Diff is small");
             setTimeout(() => {
               say(
                 "rendogtv",
                 `Welcome to the stream everyone! Today we are playing ${type()}`
               );
-            }, 310 * 1000 - diff);
+            }, 600 * 1000 - diff);
           }
         }
       }
@@ -68,14 +92,19 @@ const sendRequest = () => {
       if (live !== true) {
         live = true;
         newStream.onNewStream();
+        console.log("New stream");
       }
 
       if (id !== stream._id) id = stream._id;
 
       if (title === null) {
+        console.log("Title was null");
+        console.log(`Known Type: ${knownType}`);
         title = stream.channel.status;
+        knownType = title !== "Nothing";
         if (knownType) commands.updateCommands(type(), false);
       } else if (title !== stream.channel.status) {
+        console.log("New title");
         title = stream.channel.status;
         if (knownType) commands.updateCommands(type(), true);
       }
@@ -108,6 +137,10 @@ let type = () => {
   } else if (game === "They Are Billions") {
     knownType = true;
     return "They are Billions";
+
+  } else if (game === "Minecraft") {
+    knownType = false;
+    return "something unusual in Minecraft";
   } else {
     knownType = false;
     return "something unusual, " + game;

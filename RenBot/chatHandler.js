@@ -13,14 +13,19 @@ import beverage from "./ChatFun/beverage";
 import poll from "./Strawpolls/poll";
 import strings from "./utilities/strings";
 import activeFeatures from "./utilities/activeFeatures.js";
+import timer from "./Timer/timer.js";
+import client from "./index.js";
 
 let first = true;
+let allowMessages = true;
 
 export default async function ChatHandler(channel, user, message, self) {
   chatSpeed.newMessage();
-  if (self) {
+  if (self || !allowMessages) {
     return;
   }
+
+  let response = null;
 
   if (first) {
     say(channel, "/color Firebrick");
@@ -66,8 +71,6 @@ export default async function ChatHandler(channel, user, message, self) {
   }
 
   let customMatch = true;
-
-  let response = null;
 
   let auth;
 
@@ -341,6 +344,19 @@ export default async function ChatHandler(channel, user, message, self) {
       else if (auth.message) response = auth.message;
       break;
 
+    case "!timer":
+      auth = commands.auth(
+        "timer",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access)
+        response = timer.timer(argumentsArray);
+      else if (auth.message) response = auth.message;
+      break;
+
     case "!beverage":
       auth = commands.auth(
         "beverage",
@@ -408,9 +424,6 @@ export default async function ChatHandler(channel, user, message, self) {
       // TODO: Call function to send commands by whisper if approved by twitch
       break;
 
-    case "!timer":
-      // TODO: Call function for timer
-      break;
     case "!info":
       const information = info.getInfo();
       if (information.live) {
@@ -420,7 +433,7 @@ export default async function ChatHandler(channel, user, message, self) {
       }
       break;
 
-    case "!restart":
+    case "!reload":
       auth = commands.auth(
         "restart",
         displayName,
@@ -432,6 +445,28 @@ export default async function ChatHandler(channel, user, message, self) {
         activeFeatures.restartListner();
         response = commands.restartListner();
       } else if (auth.message) response = auth.message;
+      break;
+
+    case "!restart":
+      if (!user.mod) break;
+      try {
+        client.say("rendogtv", "Restarting, dont @ me right now");
+        allowMessages = false;
+        const fs = require('fs');
+        fs.writeFileSync("./restart.json", JSON.stringify({restart: true, restartTime: Date.now()}));
+        var child_process = require('child_process');
+        setTimeout(() => {
+          client.disconnect();
+          child_process.exec("start /min cmd.exe /K npm run start ^& exit");
+          setTimeout(() => {
+            process.exit();  
+          }, 1000);
+        }, 10000);
+        
+      } catch (error) {
+        say("rendogtv", "Restart failed, something bad happened! @Bjornar97 , you need to take a look at this.");
+        console.dir(error);
+      }
       break;
 
     default:
@@ -466,6 +501,7 @@ export default async function ChatHandler(channel, user, message, self) {
   }
 
   if (response !== null) {
+    response = response.replace("{user}", `@${displayName}`);
     say(channel, response);
   }
 }

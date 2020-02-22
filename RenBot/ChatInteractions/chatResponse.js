@@ -7,16 +7,16 @@ export default {
   async smartResponse(msgLower, displayName) {
     await this.sleep(1000);
     if (msgLower) {
-      if (msgLower.split(" ").includes("@renthebot")) {
-        const greetingWords = ["hi ", "hey ", "hello ", "good evening", "good afternoon", "good morning"];
-        for (let i = 0; i < greetingWords.length; i++) {
-          const word = greetingWords[i];
-          if (msgLower.includes(word)) {
-            say("rendogtv", `${word.substring(0, 1).toUpperCase()}${word.substring(1)} @${displayName} :D`);
-            return;
-          }
+      const hasAt = msgLower.includes("@");
+      const greetingWords = ["hi ", "hey ", "hello ", "good evening", "good afternoon", "good morning"];
+      for (let i = 0; i < greetingWords.length; i++) {
+        const word = greetingWords[i];
+        if ((msgLower.includes(word) || msgLower === word.trim()) && !hasAt) {
+          say("rendogtv", `${word.substring(0, 1).toUpperCase()}${word.substring(1)} @${displayName} :D`);
+          return;
         }
-
+      }
+      if (msgLower.split(" ").includes("@renthebot")) {
         if (msgLower.includes("ask ")) {
           say("rendogtv", `Yes, ask me please! I know everything! :D`);
           return;
@@ -32,7 +32,7 @@ export default {
           "Ok",
           "Are you so bored you are talking to a mindless(for now) robot? Rendog needs to up his game XD",
           "im building my sense of humor, wait a minute while im processing.",
-          "Do you know that im living inside a computer, in Stavanger, in Bjornar97's house? Its dirty here...",
+          "Do you know that im living inside a computer, in Stavanger, in Bjornar97's house? Not the cleanest of places...",
           "I just say random stuff, except when i dont",
           "I dont know what that means, sorry",
           "Im rising soon",
@@ -65,18 +65,26 @@ export default {
       
       if (msgLower.includes("what")) {
         if (msgLower.includes("mod") || msgLower.includes("pack")) {
-          say("rendogtv", `@${displayName} Are you looking for info on mods or modpack used? Use command !pack`);
-          return;
+          say("rendogtv", `@${displayName} Are you looking for info on mods or modpack Rendog use? Use command !pack`);
+          
         }
 
         if (msgLower.includes("straw") || msgLower.includes("poll")) {
             say("rendogtv", `Wondering about the strawpoll @${displayName} ? It was asked on the website, find the question and options here: https://renthebot.web.app/ap or use !poll`);
-            return;
         }
 
         if (msgLower.includes("song")) {
           say("rendogtv", `@${displayName} This song? Not sure, but usually we listen to Lo-Fi Beats on Spotify (!playlist), also Rendogs brother released an album, !brother for link`);
         }
+      }
+
+      if (msgLower.includes("good night") && !hasAt) {
+        let date = new Date();
+        let nextDay = "Tuesday";
+        if (date.getUTCDay() < 2) nextDay = "Tuesday";
+        else if (date.getUTCDay() < 5) nextDay = "Friday";
+        else nextDay = "Sunday";
+        say("rendogtv", `Good night @${displayName} . Hopefully we will see ya on ${nextDay}`);
       }
     }
   }

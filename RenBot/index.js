@@ -25,6 +25,10 @@ const opts = {
   channels: [process.env.CHANNEL_NAME]
 };
 
+process.stdout.write(
+  String.fromCharCode(27) + "]0;" + "RenBot" + String.fromCharCode(7)
+);
+
 // Create a client with our options
 const client = new tmi.client(opts);
 export default client;
@@ -33,6 +37,7 @@ console.log("Created Client");
 
 import ChatHandler from "./chatHandler";
 import WhisperHandler from "./whisperHandler";
+import say from "./say";
 
 client.on("chat", ChatHandler);
 client.on("whisper", WhisperHandler);
@@ -44,4 +49,17 @@ client.connect();
 
 function onConnectedHandler(addr, port) {
   console.log(`* I have a connection`);
+  try {
+    const fs = require('fs');
+    const restart = JSON.parse(fs.readFileSync("./restart.json"));
+    console.dir(restart);
+    if (restart.restart) {
+      if (Date.now() - restart.restartTime < 60*1000)
+      say("rendogtv", "Restart complete, @ me again");
+      fs.writeFileSync("./restart.json", JSON.stringify({restart: false, restartTime: 0}));
+    }
+      
+  } catch (error) {
+    console.dir(error);
+  }
 }

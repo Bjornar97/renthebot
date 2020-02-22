@@ -13,23 +13,23 @@ export default {
       speed -= 1;
     }, 30 * 1000);
 
-    const slowFeature = features.isEnabled("autoslow");
+    const slowFeature = features.isEnabled("autoSlow");
     if (slowFeature) {
       if (Date.now() - lastUpdate > 5 * 60 * 1000) {
-        if (speed > 60 && (!slowEnabled || length !== 60)) {
+        if (speed > 60 && (!slowEnabled || length !== 120)) {
+          say("rendogtv", "/slow 120");
+          this.slowModeUpdate(true, 120)
+        } else if (speed > 30 && (!slowEnabled || length !== 60)) {
           say("rendogtv", "/slow 60");
-          lastUpdate = Date.now();
-        } else if (speed > 30 && (!slowEnabled || length !== 30)) {
-          say("rendogtv", "/slow 30");
-          lastUpdate = Date.now();
+          this.slowModeUpdate(true, 60)
         } else if (slowEnabled) {
           say("rendogtv", "/slowoff");
-          lastUpdate = Date.now();
+          this.slowModeUpdate(false, 0);
         }
       }
     }
   },
-  slowModeUpdate(channel, enabled, length) {
+  slowModeUpdate(enabled, length) {
     slowEnabled = enabled;
     length = length;
     lastUpdate = Date.now();
