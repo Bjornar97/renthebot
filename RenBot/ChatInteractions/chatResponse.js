@@ -9,7 +9,7 @@ export default {
     await this.sleep(1000);
     if (msgLower) {
       const hasAt = msgLower.includes("@");
-      const greetingWords = ["hi", "hey", "hello", "good evening", "good afternoon", "good morning"];
+      const greetingWords = ["hi", "hey", "hello", "o/", "sup", "howdy", "hiya", "good evening", "good afternoon", "good morning"];
       for (let i = 0; i < greetingWords.length; i++) {
         const word = greetingWords[i];
         if (msgLower.match(new RegExp('(^|\\s)'+word+'(\\s|$|\\?|!|\\.)')) && !hasAt) {
