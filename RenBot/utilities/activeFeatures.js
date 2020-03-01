@@ -1,10 +1,56 @@
 import { db } from "./firestore";
+import strings from "./strings";
 
 let activeFeaturesMap = new Map();
+
+const featuresCollection = db.collection("features");
 
 export default {
   isEnabled(id) {
     return activeFeaturesMap.get(id);
+  },
+  enableFeature(displayName, featureId) {
+    if (featureId) {
+      featureId = strings.removeFirstSymbol(featureId, "!");
+      const feature = this.isEnabled(featureId);
+      if (feature !== undefined && feature !== null) {
+        if (feature) {
+          return `@${displayName} The "${featureId}" feature is already enabled"`;
+        }
+        if (feature !== undefined && feature !== null) {
+          featuresCollection.doc(featureId).update({ enabled: true });
+          return `The "${featureId}" feature is now enabled`;
+        } else {
+          return `@${displayName} The feature ${featureId} does not exist`;
+        }
+      } else {
+        return `@${displayName} The feature ${featureId} does not exist`;
+      }
+    } else {
+      return `@${displayName} You need to supply which feature to enable. For example "!enable dice"`;
+    }
+  },
+  disableFeature(displayName, featureId) {
+    if (featureId) {
+      featureId = strings.removeFirstSymbol(featureId, "!");
+      const feature = this.isEnabled(featureId);
+      if (feature !== undefined && feature !== null) {
+        if (!feature) {
+          return `@${displayName} The "${featureId}" feature is already enabled"`;
+        }
+
+        if (this.isEnabled(featureId)) {
+          featuresCollection.doc(featureId).update({ enabled: false });
+          return `The "${featureId}" feature is now disabled`;
+        } else {
+          return `@${displayName} The feature ${featureId} does not exist`;
+        }
+      } else {
+        return `@${displayName} The feature ${featureId} does not exist`;
+      }
+    } else {
+      return `@${displayName} You need to supply which feature to disable. For example "!disable dice"`;
+    }
   },
   restartListner() {
     if (listner) {

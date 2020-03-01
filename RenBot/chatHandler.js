@@ -362,6 +362,32 @@ export default async function ChatHandler(channel, user, message, self) {
       else if (auth.message) response = auth.message;
       break;
 
+    case "!enablefeature":
+      auth = commands.auth(
+        "enablefeature",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access)
+        response = activeFeatures.enableFeature(displayName, targetName);
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!disablefeature":
+      auth = commands.auth(
+        "disablefeature",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access)
+        response = activeFeatures.disableFeature(displayName, targetName);
+      else if (auth.message) response = auth.message;
+      break;
+
     case "!timer":
       auth = commands.auth(
         "timer",
