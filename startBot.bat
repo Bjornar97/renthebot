@@ -1,3 +1,3 @@
 @ECHO OFF
-npm run start ^& exit
+npm run start
 exit

@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "title RenBot && start /min node -r esm ./RenBot/index.js ^& exit"
+    "start": "title RenBot && start /min node -r esm ./RenBot/index.js"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/Bjornar97/rendogtv_viewers_bot#readme",
   "dependencies": {
+    "axios": "^0.19.2",
     "dotenv": "^8.2.0",
     "esm": "^3.2.25",
     "firebase-admin": "^8.6.1",

@@ -8,9 +8,14 @@ const commandsCollection = db.collection("commands");
 
 let commandsMap = new Map();
 
+let globalCooldown = new Map();
+
 let cooldownMap = new Map();
 
 export default {
+  isEnabled(id) {
+    return this.getCommand(id).enabled;
+  },
   getCommand(id) {
     return commandsMap.get(id);
   },
@@ -53,8 +58,16 @@ export default {
     }
 
     if (auth.access) {
-      let cooldown = cooldownMap.get(displayName);
+      if (command.globalCooldown) {
+        const last = globalCooldown.get(commandId);
+        if (Date.now() - last < command.globalCooldown) {
+          console.log("Global cooldown active");
+          return {access: false};
+        }
+        globalCooldown.set(commandId, Date.now());
+      }
 
+      let cooldown = cooldownMap.get(displayName);
       if (cooldown) {
         if (command.cooldown && cooldown[commandId]) {
           const last = cooldown[commandId].last;

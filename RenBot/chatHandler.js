@@ -9,6 +9,7 @@ import commands from "./utilities/commands";
 import dice from "./ChatFun/dice";
 import blame from "./ChatFun/blames";
 import line from "./ChatFun/line";
+import suggestion from "./ChatInteractions/suggestion";
 import beverage from "./ChatFun/beverage";
 import poll from "./Strawpolls/poll";
 import strings from "./utilities/strings";
@@ -42,8 +43,11 @@ export default async function ChatHandler(channel, user, message, self) {
   ChatInteractions.smartResponse(msgLower, displayName);
 
   // Checking if the first letter is !, if not, returns
-  const commandName = commandArray[0].trim().toLowerCase();
+  let commandName = commandArray[0].trim().toLowerCase();
   if (!stringTools.hasFirstLetter(commandName, "!")) return;
+
+  // Make it work if they have a space between ! and the commandname, mobile automatically make that space
+  if (commandName === "!") commandName = "!" + commandArray[1];
 
   let argumentsArray = [];
   let argumentsText = "Any";
@@ -293,6 +297,20 @@ export default async function ChatHandler(channel, user, message, self) {
       else if (auth.message) response = auth.message;
       break;
 
+    case "!suggestion":
+      console.log("Suggestion command");
+      auth = commands.auth(
+        "suggestion",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      console.dir(auth);
+      if (auth.access) response = await suggestion.suggestion(argumentsArray, displayName);
+      else if (auth.message) response = auth.message;
+      break;
+
     case "!dice":
       auth = commands.auth(
         "dice",
@@ -450,7 +468,7 @@ export default async function ChatHandler(channel, user, message, self) {
     case "!restart":
       if (!user.mod) break;
       try {
-        client.say("rendogtv", "Restarting, dont @ me right now");
+        client.say("rendogtv", "Restarting, dont @ me or use commands right now");
         allowMessages = false;
         const fs = require('fs');
         fs.writeFileSync("./restart.json", JSON.stringify({restart: true, restartTime: Date.now()}));
@@ -461,7 +479,7 @@ export default async function ChatHandler(channel, user, message, self) {
           setTimeout(() => {
             process.exit();  
           }, 1000);
-        }, 10000);
+        }, 4000);
         
       } catch (error) {
         say("rendogtv", "Restart failed, something bad happened! @Bjornar97 , you need to take a look at this.");

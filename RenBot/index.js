@@ -1,4 +1,5 @@
 import chatSpeed from "./ChatSpeed/speed";
+import info from "./StreamInfo/info";
 import admin from "firebase-admin";
 const serviceAccount = require("../adminKey.json");
 
@@ -58,6 +59,7 @@ function onConnectedHandler(addr, port) {
       say("rendogtv", "Restart complete, @ me again");
       fs.writeFileSync("./restart.json", JSON.stringify({restart: false, restartTime: 0}));
     }
+    info.startWebhook();
       
   } catch (error) {
     console.dir(error);

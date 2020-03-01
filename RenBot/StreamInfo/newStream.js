@@ -16,6 +16,5 @@ export default {
 
     commands.restartListner();
     features.restartListner();
-    say("rendogtv", "We have gone live!");
   }
 };

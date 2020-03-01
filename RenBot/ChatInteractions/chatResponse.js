@@ -1,4 +1,5 @@
 import say from "../say.js";
+import activeFeatures from "../utilities/activeFeatures.js";
 
 export default {
   sleep(ms) {
@@ -12,11 +13,17 @@ export default {
       for (let i = 0; i < greetingWords.length; i++) {
         const word = greetingWords[i];
         if ((msgLower.includes(word) || msgLower === word.trim()) && !hasAt) {
+          if (!activeFeatures.isEnabled("chatResponse")) {
+            return;
+          }
           say("rendogtv", `${word.substring(0, 1).toUpperCase()}${word.substring(1)} @${displayName} :D`);
           return;
         }
       }
       if (msgLower.split(" ").includes("@renthebot")) {
+        if (!activeFeatures.isEnabled("chatResponse")) {
+          return;
+        }
         if (msgLower.includes("ask ")) {
           say("rendogtv", `Yes, ask me please! I know everything! :D`);
           return;
@@ -75,6 +82,10 @@ export default {
 
         if (msgLower.includes("song")) {
           say("rendogtv", `@${displayName} This song? Not sure, but usually we listen to Lo-Fi Beats on Spotify (!playlist), also Rendogs brother released an album, !brother for link`);
+        }
+
+        if (msgLower.includes("playlist")) {
+          say("rendogtv", `@${displayName} This is probably Lo-Fi Beats on Spotify (!playlist), also Rendogs brother released an album, !brother for link`);
         }
       }
 
