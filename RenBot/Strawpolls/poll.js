@@ -4,8 +4,11 @@ import say from "../say";
 let activePollId = null;
 let pollData = null;
 
+let results = [];
+let saving = false;
+
 export default {
-  vote(displayName, letter) {
+  async vote(displayName, letter) {
     const code = letter.toUpperCase().charCodeAt(0) - 65;
     if (letter > 1) {
       return `@${displayName} You need to supply exactly one letter, for example: "!vote A"`;
@@ -16,26 +19,43 @@ export default {
     }
 
     if (activePollId) {
-      if (pollData.options.length > code) {
-        const doc = db
-          .collection("polls")
-          .doc(activePollId)
-          .collection("votes")
-          .doc(displayName);
-
-        doc.get().then(val => {
+      try {
+        if (pollData.options.length > code) {
+          const doc = db
+            .collection("polls")
+            .doc(activePollId)
+            .collection("votes")
+            .doc(displayName);
+  
+          let val = await doc.get();
           if (val.exists) {
+            results[val.data().vote] -= 1;
             doc.update({
               vote: code
             });
           } else {
             doc.set({
-              vote: letter.toUpperCase().charCodeAt(0) - 65
+              vote: code
             });
           }
-        });
-      } else {
-        return `@${displayName} You voted for a non-existent option. Please pick a valid option, use "!poll" to get the options or visit https://renthebot.web.app/ap`;
+  
+          results[code] += 1;
+          if (!saving) {
+            saving = true;
+            setTimeout(() => {
+              saving = false;
+              let pollDoc = db.collection("polls").doc(activePollId);
+              pollDoc.update({
+                result: results
+              });
+            }, 2000);
+          }
+        } else {
+          return `@${displayName} You tried to vote for a non-existent option. Please pick a valid option, use "!poll" to get the options or visit https://renthebot.web.app/ap`;
+        }
+      } catch (error) {
+        console.log("Error on vote:");
+        console.dir(error);
       }
     } else {
       return `@${displayName} No active strawpoll at the moment`;
@@ -77,6 +97,9 @@ function stateEndedPoll(id) {
         } else if (res === max) {
           winners.push(index);
         }
+      }).catch((error) => {
+        console.log("ERROR: ");
+        console.dir(error);
       });
       let output = "";
       if (winners.length === 1) {
@@ -136,6 +159,14 @@ db.collection("polls")
           activePollId = change.doc.id;
           pollData = data;
           startPoll();
+          results = [];
+          if (data.result) {
+            results = data.result;
+          } else {
+            for (let i = 0; i < data.options.length; i++) {
+              results.push(0);
+            }
+          }
           break;
 
         case "removed":

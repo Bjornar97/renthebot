@@ -15,10 +15,14 @@ import poll from "./Strawpolls/poll";
 import strings from "./utilities/strings";
 import activeFeatures from "./utilities/activeFeatures.js";
 import timer from "./Timer/timer.js";
-import client from "./index.js";
+import client from "./main.js";
+import users from "./utilities/users.js";
+import botManagement from "./utilities/botManagement.js";
 
 let first = true;
 let allowMessages = true;
+
+let isTellingToWhisper = false;
 
 export default async function ChatHandler(channel, user, message, self) {
   chatSpeed.newMessage();
@@ -415,15 +419,14 @@ export default async function ChatHandler(channel, user, message, self) {
       break;
 
     case "!vote":
-      auth = commands.auth(
-        "vote",
-        displayName,
-        user.mod,
-        user.subscriber,
-        user["id"]
-      );
-      if (auth.access) response = poll.vote(displayName, argumentsText.trim());
-      else if (auth.message) response = auth.message;
+      if (!isTellingToWhisper) {
+        isTellingToWhisper = true;
+        setTimeout(() => {
+          isTellingToWhisper = false;
+          say(channel, "IMPORTANT!: VOTE BY WHISPERING TO ME! DO NOT USE !vote IN CHAT!");
+        }, 5000);
+      }
+      users.deleteMessage(user["id"]);
       break;
 
     case "!poll":
@@ -493,24 +496,8 @@ export default async function ChatHandler(channel, user, message, self) {
 
     case "!restart":
       if (!user.mod) break;
-      try {
-        client.say("rendogtv", "Restarting, dont @ me or use commands right now");
-        allowMessages = false;
-        const fs = require('fs');
-        fs.writeFileSync("./restart.json", JSON.stringify({restart: true, restartTime: Date.now()}));
-        var child_process = require('child_process');
-        setTimeout(() => {
-          client.disconnect();
-          child_process.exec("start /min cmd.exe /K npm run start ^& exit");
-          setTimeout(() => {
-            process.exit();  
-          }, 1000);
-        }, 4000);
-        
-      } catch (error) {
-        say("rendogtv", "Restart failed, something bad happened! @Bjornar97 , you need to take a look at this.");
-        console.dir(error);
-      }
+      allowMessages = false;
+      botManagement.restart();
       break;
 
     default:
@@ -544,7 +531,7 @@ export default async function ChatHandler(channel, user, message, self) {
     }
   }
 
-  if (response !== null) {
+  if (response) {
     response = response.replace("{user}", `@${displayName}`);
     say(channel, response);
   }

@@ -5,20 +5,6 @@ import commands from "../utilities/commands";
 import newStream from "./newStream";
 import { db } from "../utilities/firestore";
 
-// let req = request.defaults({
-//   headers: {
-//     "Client-ID": "fwidrp0e5f0nza5cltuqgb19fx9f45",
-//     Authorization: "OAuth zrjuwb8rgcydcsvebw9k8n0nibhg1e",
-//     Accept: "application/vnd.twitchtv.v5+json"
-//   }
-// });
-// let req = request.defaults({
-//   headers: {
-//     "Client-ID": "fwidrp0e5f0nza5cltuqgb19fx9f45",
-//     Authorization: "Bearer zrjuwb8rgcydcsvebw9k8n0nibhg1e",
-//   }
-// });
-
 const twitchRequest = axios.create({
   headers: {
     "Client-ID": "fwidrp0e5f0nza5cltuqgb19fx9f45",
@@ -26,8 +12,7 @@ const twitchRequest = axios.create({
   }
 });
 
-//const url = "https://api.twitch.tv/kraken/streams/30600786";
-const url = "https://api.twitch.tv/helix/users?id=30600786";
+//const url = "https://api.twitch.tv/helix/users?id=30600786";
 const webhookUrl = "https://api.twitch.tv/helix/webhooks/hub";
 
 let knownType = false;
@@ -57,7 +42,7 @@ export default {
     }
   },
   isLive() {
-    return live;
+    return stream.live;
   },
   startWebhook() {
     twitchRequest.post(webhookUrl, {
@@ -114,6 +99,7 @@ function startLiveListner() {
       game = (await twitchRequest.get(`https://api.twitch.tv/helix/games?id=${stream.gameId}`)).data[0].name;
       console.log(game);
     } catch (error) {
+      console.error("Error: " + error);
       game = null;
     }
     knownType = false;

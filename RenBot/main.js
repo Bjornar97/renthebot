@@ -39,6 +39,8 @@ console.log("Created Client");
 import ChatHandler from "./chatHandler";
 import WhisperHandler from "./whisperHandler";
 import say from "./say";
+import botManagement from "./utilities/botManagement";
+import commands from "./utilities/commands";
 
 client.on("chat", ChatHandler);
 client.on("whisper", WhisperHandler);
@@ -65,3 +67,25 @@ function onConnectedHandler(addr, port) {
     console.dir(error);
   }
 }
+
+setInterval(() => {
+  if (!info.isLive()) {
+    console.log("Restarting listeners, 6 hours since last time");
+    commands.restartListner();
+    activeFeatures.restartListner();
+  }
+}, 1000*60*60*3);
+
+// Restarts the bot every 7 days to keep the webhook going
+// If he is live, postpones the restart, checking every hour and then restarts when he is offline
+setTimeout(() => {
+  if (!info.isLive()) {
+    botManagement.restart();
+  } else {
+    setInterval(() => {
+      if (!info.isLive()) {
+        botManagement.restart();
+      }
+    }, 1000*60*60);
+  }
+}, 1000*60*60*24*7);

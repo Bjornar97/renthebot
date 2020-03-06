@@ -60,11 +60,12 @@ export default {
     if (auth.access) {
       if (command.globalCooldown) {
         const last = globalCooldown.get(commandId);
-        if (Date.now() - last < command.globalCooldown) {
-          console.log("Global cooldown active");
+        if (Date.now() - last < command.globalCooldown * 1000) {
+          users.deleteMessage(msgId);
           return {access: false};
+        } else {
+          globalCooldown.set(commandId, Date.now());
         }
-        globalCooldown.set(commandId, Date.now());
       }
 
       let cooldown = cooldownMap.get(displayName);
@@ -250,9 +251,8 @@ export default {
 
 let listner;
 
-startListner();
-
 function startListner() {
+  console.log("Starting command listner in commands");
   listner = commandsCollection.onSnapshot(snapshot => {
     snapshot.docChanges().forEach(value => {
       const data = value.doc.data();
@@ -263,6 +263,7 @@ function startListner() {
         displayName: data.displayName,
         response: data.response,
         cooldown: data.cooldown,
+        globalCooldown: data.globalCooldown,
         modsOnly: data.modsOnly,
         subsOnly: data.subsOnly,
         custom: data.custom
@@ -284,3 +285,5 @@ function startListner() {
     });
   });
 }
+
+startListner();

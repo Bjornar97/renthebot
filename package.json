@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "title RenBot && start /min node -r esm ./RenBot/index.js"
+    "start": "title RenBot && pm2 start ./RenBot/init.js -o ./output.log -e error.log --time --name RenTheBot"
   },
   "repository": {
     "type": "git",
