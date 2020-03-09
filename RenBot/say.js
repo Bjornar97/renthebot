@@ -16,7 +16,7 @@ setInterval(() => {
       }
     }
   }
-}, 1200);
+}, 500);
 
 export default function say(channel, message) {
   sayQueue.push({ channel, message });

@@ -1,5 +1,6 @@
 import say from "../say.js";
 import activeFeatures from "../utilities/activeFeatures.js";
+import commands from "../utilities/commands.js";
 
 export default {
   sleep(ms) {
@@ -71,7 +72,7 @@ export default {
       }
       
       if (msgLower.includes("what")) {
-        if (msgLower.includes("mod") || msgLower.includes("pack")) {
+        if ((msgLower.includes("mod") || msgLower.includes("pack")) && commands.isEnabled("pack")) {
           say("rendogtv", `@${displayName} Are you looking for info on mods or modpack Rendog use? Use command !pack`);
           
         }

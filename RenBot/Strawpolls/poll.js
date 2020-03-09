@@ -137,7 +137,7 @@ function getPollOptions() {
   pollData.options.forEach((option, index) => {
     output += `${String.fromCharCode(index + 65)} - ${option} | `;
   });
-  output += `Vote by !vote 'letter'. For example "!vote A"`;
+  output += `Vote IN WHISPER: !vote 'letter'. For example "!vote A"`;
   return output;
 }
 

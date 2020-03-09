@@ -41,6 +41,7 @@ import WhisperHandler from "./whisperHandler";
 import say from "./say";
 import botManagement from "./utilities/botManagement";
 import commands from "./utilities/commands";
+import activeFeatures from "./utilities/activeFeatures";
 
 client.on("chat", ChatHandler);
 client.on("whisper", WhisperHandler);
