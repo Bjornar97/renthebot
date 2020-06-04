@@ -61,9 +61,7 @@ function onConnectedHandler(addr, port) {
       if (Date.now() - restart.restartTime < 60*1000)
       say("rendogtv", "Restart complete, @ me again");
       fs.writeFileSync("./restart.json", JSON.stringify({restart: false, restartTime: 0}));
-    }
-    info.startWebhook();
-      
+    }      
   } catch (error) {
     console.dir(error);
   }
@@ -71,22 +69,8 @@ function onConnectedHandler(addr, port) {
 
 setInterval(() => {
   if (!info.isLive()) {
-    console.log("Restarting listeners, 6 hours since last time");
+    console.log("Restarting listeners");
     commands.restartListner();
     activeFeatures.restartListner();
   }
 }, 1000*60*60*3);
-
-// Restarts the bot every 7 days to keep the webhook going
-// If he is live, postpones the restart, checking every hour and then restarts when he is offline
-setTimeout(() => {
-  if (!info.isLive()) {
-    botManagement.restart();
-  } else {
-    setInterval(() => {
-      if (!info.isLive()) {
-        botManagement.restart();
-      }
-    }, 1000*60*60);
-  }
-}, 1000*60*60*24*7);

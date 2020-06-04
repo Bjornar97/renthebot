@@ -18,6 +18,7 @@ import timer from "./Timer/timer.js";
 import client from "./main.js";
 import users from "./utilities/users.js";
 import botManagement from "./utilities/botManagement.js";
+import modtools from "./ChatModeration/modtools.js";
 
 let first = true;
 let allowMessages = true;
@@ -68,7 +69,7 @@ export default async function ChatHandler(channel, user, message, self) {
     months = badgeInfo.subscriber;
   } else {
     badgeInfo = {
-      subscriber: null
+      subscriber: null,
     };
   }
 
@@ -311,7 +312,8 @@ export default async function ChatHandler(channel, user, message, self) {
         user["id"]
       );
       console.dir(auth);
-      if (auth.access) response = await suggestion.suggestion(argumentsArray, displayName);
+      if (auth.access)
+        response = await suggestion.suggestion(argumentsArray, displayName);
       else if (auth.message) response = auth.message;
       break;
 
@@ -400,8 +402,7 @@ export default async function ChatHandler(channel, user, message, self) {
         user.subscriber,
         user["id"]
       );
-      if (auth.access)
-        response = timer.timer(argumentsArray);
+      if (auth.access) response = timer.timer(argumentsArray);
       else if (auth.message) response = auth.message;
       break;
 
@@ -423,7 +424,10 @@ export default async function ChatHandler(channel, user, message, self) {
         isTellingToWhisper = true;
         setTimeout(() => {
           isTellingToWhisper = false;
-          say(channel, "IMPORTANT!: VOTE BY WHISPERING TO ME! DO NOT USE !vote IN CHAT!");
+          say(
+            channel,
+            "IMPORTANT!: VOTE BY WHISPERING TO ME! DO NOT USE !vote IN CHAT!"
+          );
         }, 5000);
       }
       users.deleteMessage(user["id"]);
@@ -478,6 +482,54 @@ export default async function ChatHandler(channel, user, message, self) {
       } else {
         response = `The stream is currently offline.`;
       }
+      break;
+
+    case "!caps":
+      auth = commands.auth(
+        "caps",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await modtools.caps(targetName, user["id"]);
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!lang":
+      auth = commands.auth(
+        "lang",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await modtools.lang(targetName, user["id"]);
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!repeat":
+      auth = commands.auth(
+        "repeat",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await modtools.repeat(targetName, user["id"]);
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!topic":
+      auth = commands.auth(
+        "topic",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await modtools.topic(targetName, user["id"]);
+      else if (auth.message) response = auth.message;
       break;
 
     case "!reload":
