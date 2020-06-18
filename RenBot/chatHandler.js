@@ -19,6 +19,7 @@ import client from "./main.js";
 import users from "./utilities/users.js";
 import botManagement from "./utilities/botManagement.js";
 import modtools from "./ChatModeration/modtools.js";
+import streamday from "./HermitCraft/streamday.js";
 
 let first = true;
 let allowMessages = true;
@@ -529,6 +530,30 @@ export default async function ChatHandler(channel, user, message, self) {
         user["id"]
       );
       if (auth.access) response = await modtools.topic(targetName, user["id"]);
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!badw":
+      auth = commands.auth(
+        "badw",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await modtools.badwords(targetName, user["id"]);
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!next":
+      auth = commands.auth(
+        "next",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await streamday.getNextStreamer();
       else if (auth.message) response = auth.message;
       break;
 
