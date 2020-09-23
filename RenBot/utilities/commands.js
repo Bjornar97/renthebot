@@ -3,6 +3,7 @@ import users from "./users";
 import say from "../say";
 import strings from "./strings";
 import activeFeatures from "./activeFeatures";
+import client from "../main";
 
 const commandsCollection = db.collection("commands");
 
@@ -24,10 +25,10 @@ export default {
   },
   /**
    * Checks if user has access to a command
-   * @param {*} commandId The Id of the command
-   * @param {*} displayName The displayName of the user using the command
-   * @param {*} mod If the user is a mod
-   * @param {*} sub If the user is a sub
+   * @param { string } commandId The Id of the command
+   * @param { string } displayName The displayName of the user using the command
+   * @param { boolean } mod If the user is a mod
+   * @param { boolean } sub If the user is a sub
    *
    * @returns An object that consist of "access"(boolean) and "message"(string or null)
    */
@@ -38,7 +39,7 @@ export default {
     }
     let auth = {
       access: false,
-      message: null
+      message: null,
     };
     if (!command.enabled) {
       return auth;
@@ -57,12 +58,16 @@ export default {
       }
     }
 
+    if (mod) {
+      return { access: true };
+    }
+
     if (auth.access) {
       if (command.globalCooldown) {
         const last = globalCooldown.get(commandId);
         if (Date.now() - last < command.globalCooldown * 1000) {
           users.deleteMessage(msgId);
-          return {access: false};
+          return { access: false };
         } else {
           globalCooldown.set(commandId, Date.now());
         }
@@ -86,31 +91,26 @@ export default {
               auth.message = `@${displayName} The "${commandId}" command has a cooldown of ${command.cooldown} seconds. Please dont use it too often. [Warning]`;
               cooldown[commandId] = {
                 last: last,
-                warning: true
+                warning: true,
               };
             }
           }
         } else {
           cooldown[commandId] = {
             last: Date.now(),
-            warning: false
+            warning: false,
           };
         }
       } else {
         cooldown = {};
         cooldown[commandId] = {
           last: Date.now(),
-          warning: false
+          warning: false,
         };
       }
       if (command.cooldown) {
         cooldownMap.set(displayName, cooldown);
       }
-    } else {
-      if (command.subsOnly)
-        auth.message = `@${displayName} The "${commandId}" command is only for subs`;
-      if (command.modsOnly)
-        auth.message = `@${displayName} The "${commandId}" command is only for mods`;
     }
     return auth;
   },
@@ -162,7 +162,7 @@ export default {
       return `@${displayName} You need to supply which command to disable. For example "!disable dice"`;
     }
   },
-  getCommands() {
+  getCommands(username) {
     let output = "The currently available commands are: ";
     let first = true;
     let subsOnly = [];
@@ -174,7 +174,7 @@ export default {
       }
     });
 
-    normal.forEach(value => {
+    normal.forEach((value) => {
       output += `${first ? "" : ","} !${value}`;
       first = false;
     });
@@ -182,13 +182,15 @@ export default {
 
     if (subsOnly.length > 0) {
       output += ". For Subs only: ";
-      subsOnly.forEach(value => {
+      subsOnly.forEach((value) => {
         output += `${first ? "" : ","} !${value}`;
         first = false;
       });
     }
 
-    return output;
+    client.whisper(username, output);
+
+    return null;
   },
   getStaticCommand(commandName) {
     const name = strings.removeFirstSymbol(commandName, "!");
@@ -246,15 +248,15 @@ export default {
       startListner();
       return "I have restarted command- and features-listening";
     }
-  }
+  },
 };
 
 let listner;
 
 function startListner() {
   console.log("Starting command listner in commands");
-  listner = commandsCollection.onSnapshot(snapshot => {
-    snapshot.docChanges().forEach(value => {
+  listner = commandsCollection.onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((value) => {
       const data = value.doc.data();
       const object = {
         enabled: data.enabled,
@@ -266,9 +268,9 @@ function startListner() {
         globalCooldown: data.globalCooldown,
         modsOnly: data.modsOnly,
         subsOnly: data.subsOnly,
-        custom: data.custom
+        custom: data.custom,
       };
-      const id = value.doc.id;
+      const id = value.doc.id.toLowerCase();
       switch (value.type) {
         case "added":
         case "modified":

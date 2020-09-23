@@ -9,6 +9,7 @@ import commands from "./utilities/commands";
 import dice from "./ChatFun/dice";
 import blame from "./ChatFun/blames";
 import line from "./ChatFun/line";
+import counts from "./ChatFun/counts";
 import suggestion from "./ChatInteractions/suggestion";
 import beverage from "./ChatFun/beverage";
 import poll from "./Strawpolls/poll";
@@ -46,7 +47,7 @@ export default async function ChatHandler(channel, user, message, self) {
 
   const msgLower = message.toLowerCase();
 
-  ChatInteractions.smartResponse(msgLower, displayName);
+  // ChatInteractions.smartResponse(msgLower, displayName);
 
   // Checking if the first letter is !, if not, returns
   let commandName = commandArray[0].trim().toLowerCase();
@@ -466,7 +467,7 @@ export default async function ChatHandler(channel, user, message, self) {
         user.subscriber,
         user["id"]
       );
-      if (auth.access) response = commands.getCommands();
+      if (auth.access) response = commands.getCommands(user.username);
       else if (auth.message) response = auth.message;
       break;
 
@@ -477,12 +478,69 @@ export default async function ChatHandler(channel, user, message, self) {
       break;
 
     case "!info":
-      const information = info.getInfo();
-      if (information.live) {
-        response = `We are live and playing ${information.type}. To see the commands available for this stream, use !commands`;
-      } else {
-        response = `The stream is currently offline.`;
+      auth = commands.auth(
+        "info",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) {
+        const information = info.getInfo();
+        if (information.live) {
+          response = `We are live and playing ${information.type}. To see the commands available for this stream, use !commands`;
+        } else {
+          response = `The stream is currently offline.`;
+        }
       }
+      break;
+
+    case "!butt":
+      auth = commands.auth(
+        "butt",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await counts.butt();
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!resetbutt":
+      auth = commands.auth(
+        "butt",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await counts.resetButt();
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!onemore":
+      auth = commands.auth(
+        "onemore",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await counts.onemore();
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!resetonemore":
+      auth = commands.auth(
+        "onemore",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await counts.resetOnemore();
+      else if (auth.message) response = auth.message;
       break;
 
     case "!caps":
@@ -541,7 +599,20 @@ export default async function ChatHandler(channel, user, message, self) {
         user.subscriber,
         user["id"]
       );
-      if (auth.access) response = await modtools.badwords(targetName, user["id"]);
+      if (auth.access)
+        response = await modtools.badwords(targetName, user["id"]);
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!beg":
+      auth = commands.auth(
+        "beg",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await modtools.beg(targetName, user["id"]);
       else if (auth.message) response = auth.message;
       break;
 
@@ -577,6 +648,18 @@ export default async function ChatHandler(channel, user, message, self) {
       botManagement.restart();
       break;
 
+    case "!token":
+      auth = commands.auth(
+        "token",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) await modtools.getToken(user.username);
+      else if (auth.message) response = auth.message;
+      break;
+
     default:
       customMatch = false;
       break;
@@ -595,9 +678,13 @@ export default async function ChatHandler(channel, user, message, self) {
         user["id"]
       );
       if (auth.access) {
-        if (commandObject.displayName) {
+        if (commandObject.displayName || targetName) {
           if (targetName) {
-            response = `@${targetName} ${commandObject.response}`;
+            if (targetName !== "-a") {
+              response = `@${targetName} ${commandObject.response}`;
+            } else {
+              response = commandObject.response;
+            }
           } else {
             response = `@${displayName} ${commandObject.response}`;
           }

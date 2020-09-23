@@ -3,6 +3,8 @@ import commands from "./utilities/commands.js";
 import poll from "./Strawpolls/poll.js";
 import stringTools from "./utilities/strings";
 import client from "./main.js";
+import modtools from "./ChatModeration/modtools";
+import botManagement from "./utilities/botManagement.js";
 
 export default async function WhisperHandler(username, user, message, self) {
   if (self) {
@@ -36,6 +38,9 @@ export default async function WhisperHandler(username, user, message, self) {
   let auth;
   let response = "";
 
+  console.log(commandName);
+  console.dir(user);
+
   switch (commandName) {
     case "!vote":
       auth = commands.auth(
@@ -45,13 +50,34 @@ export default async function WhisperHandler(username, user, message, self) {
         user.subscriber,
         user["id"]
       );
-      if (auth.access) response = await poll.vote(displayName, argumentsText.trim());
+      if (auth.access)
+        response = await poll.vote(displayName, argumentsText.trim());
       else if (auth.message) response = auth.message;
+      break;
+
+    case "!token":
+      auth = commands.auth(
+        "token",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await modtools.getToken(user.username);
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!restart":
+      if (!user.mod) break;
+      allowMessages = false;
+      botManagement.restart();
       break;
 
     default:
       break;
   }
-  console.log("Trying to respond");
-  client.whisper(username, "Your message");
+
+  if (response) {
+    client.whisper(username, response);
+  }
 }

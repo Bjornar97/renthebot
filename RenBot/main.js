@@ -6,7 +6,7 @@ const serviceAccount = require("../adminKey.json");
 try {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://rendogtv-viewers-bot.firebaseio.com"
+    databaseURL: "https://rendogtv-viewers-bot.firebaseio.com",
   });
 } catch (error) {}
 
@@ -17,13 +17,13 @@ require("dotenv").config();
 const opts = {
   identity: {
     username: process.env.BOT_USERNAME,
-    password: process.env.OAUTH_TOKEN
+    password: process.env.OAUTH_TOKEN,
   },
   connection: {
     secure: false,
-    reconnect: true
+    reconnect: true,
   },
-  channels: [process.env.CHANNEL_NAME]
+  channels: [process.env.CHANNEL_NAME],
 };
 
 process.stdout.write(
@@ -54,14 +54,27 @@ client.connect();
 function onConnectedHandler(addr, port) {
   console.log(`* I have a connection`);
   try {
-    const fs = require('fs');
+    const fs = require("fs");
     const restart = JSON.parse(fs.readFileSync("./restart.json"));
     console.dir(restart);
     if (restart.restart) {
-      if (Date.now() - restart.restartTime < 60*1000)
-      say("rendogtv", "Restart complete, @ me again");
-      fs.writeFileSync("./restart.json", JSON.stringify({restart: false, restartTime: 0}));
-    }      
+      let diff = Date.now() - restart.restartTime;
+      if (diff < 60 * 1000) {
+        say("rendogtv", "Restart complete");
+      } else {
+        say(
+          "rendogtv",
+          `I had some kind of headache... Im back now after ${
+            diff / (1000 * 60)
+          } minutes`
+        );
+      }
+
+      fs.writeFileSync(
+        "./restart.json",
+        JSON.stringify({ restart: false, restartTime: 0 })
+      );
+    }
   } catch (error) {
     console.dir(error);
   }
@@ -73,4 +86,8 @@ setInterval(() => {
     commands.restartListner();
     activeFeatures.restartListner();
   }
-}, 1000*60*60*3);
+}, 1000 * 60 * 60 * 4);
+
+setInterval(() => {
+  botManagement.restart();
+}, 1000 * 60 * 60 * 7);
