@@ -21,6 +21,7 @@ import users from "./utilities/users.js";
 import botManagement from "./utilities/botManagement.js";
 import modtools from "./ChatModeration/modtools.js";
 import streamday from "./HermitCraft/streamday.js";
+import countermeasures from "./ChatModeration/botCountermeasures";
 
 let first = true;
 let allowMessages = true;
@@ -48,6 +49,11 @@ export default async function ChatHandler(channel, user, message, self) {
   const msgLower = message.toLowerCase();
 
   // ChatInteractions.smartResponse(msgLower, displayName);
+
+  // Countermeasures against bots, exception for mods and subscribers to save computing time and ram usage
+  //if (!user.mod && !user.subscriber) {
+  countermeasures.addMessage(message, user.username);
+  //}
 
   // Checking if the first letter is !, if not, returns
   let commandName = commandArray[0].trim().toLowerCase();

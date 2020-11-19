@@ -1,12 +1,12 @@
 {
   "name": "rendogtv_viewers_bot",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Bot for rendog tv viewers",
   "main": "/RenBot/index.js",
   "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "title RenBot && pm2 start ./RenBot/init.js -o ./output.log -e error.log --time --name RenTheBot"
+    "start": "pm2 start ./RenBot/init.js -o ./output.log -e error.log --time --name RenTheBot"
   },
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
     "axios": "^0.19.2",
     "dotenv": "^8.2.0",
     "esm": "^3.2.25",
-    "firebase-admin": "^8.12.1",
+    "firebase-admin": "^8.13.0",
     "request": "^2.88.2",
     "tmi.js": "^1.5.0"
   },

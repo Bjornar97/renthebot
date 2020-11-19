@@ -52,7 +52,7 @@ export default {
                   "rendogtv",
                   `TIMER ${name === "default" ? "" : name}: ${minutes} minute${
                     minutes > 1 ? "s" : ""
-                  } has passed!`
+                  } have passed!`
                 );
               }, intervalLenght);
             } catch (error) {
