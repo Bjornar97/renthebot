@@ -1,4 +1,4 @@
-import { db } from "../utilities/firestore";
+import { db } from "../utilities/firestore.mjs";
 const subsCollection = db.collection("subs");
 
 export default {
@@ -7,13 +7,13 @@ export default {
     try {
       task = task.charAt(0).toUpperCase() + task.substring(1);
       const docref = subsCollection.doc(displayName);
-      docref.get().then(doc => {
+      docref.get().then((doc) => {
         if (doc.exists) {
           docref.update({
             name: displayName,
             months: months,
             will: task,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         } else {
           docref.set({
@@ -21,7 +21,7 @@ export default {
             months: months,
             will: task,
             selected: false,
-            timestamp: Date.now()
+            timestamp: Date.now(),
           });
         }
         // TODO: look into this: registered(displayName);
@@ -36,16 +36,14 @@ export default {
   },
   resetSubList() {
     try {
-      subsCollection.get().then(snapshot => {
-        snapshot.docs.forEach(doc => {
-          db.collection("subs")
-            .doc(doc.id)
-            .delete();
+      subsCollection.get().then((snapshot) => {
+        snapshot.docs.forEach((doc) => {
+          db.collection("subs").doc(doc.id).delete();
         });
       });
     } catch (error) {
       console.log("ERROR: ");
       console.dir(error);
     }
-  }
+  },
 };

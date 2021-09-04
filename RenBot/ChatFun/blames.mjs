@@ -1,4 +1,4 @@
-import { db, admin } from "../utilities/firestore";
+import { db, admin } from "../utilities/firestore.mjs";
 
 const rendogtvDoc = db.collection("channels").doc("rendogtv");
 
@@ -19,7 +19,7 @@ export default {
     try {
       let doc = await rendogtvDoc.get();
       rendogtvDoc.update({
-        blameChat: admin.firestore.FieldValue.increment(1)
+        blameChat: admin.firestore.FieldValue.increment(1),
       });
       return `${doc.data().blameChat + 1} has blamed chat!`;
     } catch (error) {
@@ -39,18 +39,12 @@ export default {
     }
   },
   resetBlameRen() {
-    db.collection("channels")
-      .doc("rendogtv")
-      .update({ blame: 0 });
+    db.collection("channels").doc("rendogtv").update({ blame: 0 });
   },
   resetBlameChat() {
-    db.collection("channels")
-      .doc("rendogtv")
-      .update({ blameChat: 0 });
+    db.collection("channels").doc("rendogtv").update({ blameChat: 0 });
   },
   resetBadIdea() {
-    db.collection("channels")
-      .doc("rendogtv")
-      .update({ badIdea: 0 });
-  }
+    db.collection("channels").doc("rendogtv").update({ badIdea: 0 });
+  },
 };

@@ -1,9 +1,9 @@
-import { db } from "./firestore";
-import users from "./users";
-import say from "../say";
-import strings from "./strings";
-import activeFeatures from "./activeFeatures";
-import client from "../main";
+import { db } from "./firestore.mjs";
+import users from "./users.mjs";
+import say from "../say.mjs";
+import strings from "./strings.mjs";
+import activeFeatures from "./activeFeatures.mjs";
+import client from "../main.mjs";
 
 const commandsCollection = db.collection("commands");
 

@@ -1,8 +1,8 @@
-import { db } from "../utilities/firestore";
-import say from "../say";
-import users from "../utilities/users";
-import beverage from "../ChatFun/beverage";
-import client from "../main";
+import { db } from "../utilities/firestore.mjs";
+import say from "../say.mjs";
+import users from "../utilities/users.mjs";
+import beverage from "../ChatFun/beverage.mjs";
+import client from "../main.mjs";
 
 let pointsMap = new Map();
 
@@ -254,6 +254,41 @@ export default {
 
       points.points = Math.round(newPoints);
       points.begTimes += 1;
+      points.lastTime = Date.now();
+      pointsMap.set(username_lower, points);
+      return this.punish(username, data.message, data.reason, msgId);
+    } catch (error) {
+      console.log("Something bad happened. " + error);
+      say("rendogtv", "I encountered a problem! @Bjornar97, help!");
+    }
+  },
+  async gib(username, msgId) {
+    if (!username) {
+      return "Usage !gib @username";
+    }
+
+    try {
+      const username_lower = username.toLowerCase();
+      let points = this.getPoints(username_lower);
+      if (points.lastTime > Date.now() - 1000 * 10) return;
+      console.log(points);
+      let gibDoc = await db.collection("punishement").doc("gib").get();
+      const data = gibDoc.data();
+
+      const lastTime = points.lastTime;
+      const diff = Date.now() - new Date(lastTime);
+
+      points.gibTimes -= Math.round(diff / (1000 * 60 * 20));
+      if (points.gibTimes < 0) points.gibTimes = 0;
+      let gibPoints = data.points;
+      let newPoints =
+        points.points +
+        (gibPoints +
+          (points.gibTimes * gibPoints) /
+            (1 / data.multiplier ? data.multiplier : 1));
+
+      points.points = Math.round(newPoints);
+      points.gibTimes += 1;
       points.lastTime = Date.now();
       pointsMap.set(username_lower, points);
       return this.punish(username, data.message, data.reason, msgId);

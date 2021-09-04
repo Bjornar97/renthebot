@@ -1,5 +1,5 @@
-import { db } from "../utilities/firestore";
-import say from "../say";
+import { db } from "../utilities/firestore.mjs";
+import say from "../say.mjs";
 
 let activePollId = null;
 let pollData = null;
@@ -26,19 +26,19 @@ export default {
             .doc(activePollId)
             .collection("votes")
             .doc(displayName);
-  
+
           let val = await doc.get();
           if (val.exists) {
             results[val.data().vote] -= 1;
             doc.update({
-              vote: code
+              vote: code,
             });
           } else {
             doc.set({
-              vote: code
+              vote: code,
             });
           }
-  
+
           results[code] += 1;
           if (!saving) {
             saving = true;
@@ -46,7 +46,7 @@ export default {
               saving = false;
               let pollDoc = db.collection("polls").doc(activePollId);
               pollDoc.update({
-                result: results
+                result: results,
               });
             }, 2000);
           }
@@ -76,7 +76,7 @@ export default {
     }
 
     return "Link to active poll: https://renthebot.web.app/ap";
-  }
+  },
 };
 
 function stateEndedPoll(id) {
@@ -86,21 +86,23 @@ function stateEndedPoll(id) {
   db.collection("polls")
     .doc(id)
     .get()
-    .then(doc => {
+    .then((doc) => {
       const data = doc.data();
-      data.result.forEach((res, index) => {
-        total += res;
-        if (res > max) {
-          max = res;
-          winners = [];
-          winners.push(index);
-        } else if (res === max) {
-          winners.push(index);
-        }
-      }).catch((error) => {
-        console.log("ERROR: ");
-        console.dir(error);
-      });
+      data.result
+        .forEach((res, index) => {
+          total += res;
+          if (res > max) {
+            max = res;
+            winners = [];
+            winners.push(index);
+          } else if (res === max) {
+            winners.push(index);
+          }
+        })
+        .catch((error) => {
+          console.log("ERROR: ");
+          console.dir(error);
+        });
       let output = "";
       if (winners.length === 1) {
         output = `The strawpoll has ended. The winner is option ${String.fromCharCode(
@@ -151,8 +153,8 @@ function startPoll() {
 db.collection("polls")
   .where("inProgress", "==", true)
   .where("deleted", "==", false)
-  .onSnapshot(snapshot => {
-    snapshot.docChanges().forEach(change => {
+  .onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((change) => {
       const data = change.doc.data();
       switch (change.type) {
         case "added":

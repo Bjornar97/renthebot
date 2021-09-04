@@ -1,4 +1,4 @@
-import { db, admin } from "../utilities/firestore";
+import { db, admin } from "../utilities/firestore.mjs";
 const usersCollection = db.collection("users");
 
 export default {
@@ -15,19 +15,19 @@ export default {
       numberOfRolls = doc.data().number + 1;
       docRef.update({
         total: admin.firestore.FieldValue.increment(num),
-        number: admin.firestore.FieldValue.increment(1)
+        number: admin.firestore.FieldValue.increment(1),
       });
     } else {
       docRef.set({
         total: num,
-        number: 1
+        number: 1,
       });
       total = num;
       numberOfRolls = 1;
     }
 
-    return `@${displayName} You rolled a ${num}. Your average is ${Math.round(
-      (total / numberOfRolls) * 100
-    ) / 100}`;
-  }
+    return `@${displayName} You rolled a ${num}. Your average is ${
+      Math.round((total / numberOfRolls) * 100) / 100
+    }`;
+  },
 };

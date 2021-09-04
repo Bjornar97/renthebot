@@ -1,9 +1,9 @@
 //import request from "request";
 import axios from "axios";
-import say from "../say";
-import commands from "../utilities/commands";
-import newStream from "./newStream";
-import { db } from "../utilities/firestore";
+import say from "../say.mjs";
+import commands from "../utilities/commands.mjs";
+import newStream from "./newStream.mjs";
+import { db } from "../utilities/firestore.mjs";
 
 let knownType = false;
 

@@ -1,4 +1,4 @@
-import { db, admin } from "../utilities/firestore";
+import { db, admin } from "../utilities/firestore.mjs";
 
 const rendogtvDoc = db.collection("channels").doc("rendogtv");
 

@@ -1,5 +1,5 @@
-import { db } from "./firestore";
-import strings from "./strings";
+import { db } from "./firestore.mjs";
+import strings from "./strings.mjs";
 
 let activeFeaturesMap = new Map();
 
@@ -57,14 +57,14 @@ export default {
       listner();
     }
     startListner();
-  }
+  },
 };
 
 let listner;
 
 function startListner() {
-  db.collection("features").onSnapshot(snapshot => {
-    snapshot.docChanges().forEach(value => {
+  db.collection("features").onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((value) => {
       console.log(`Updated ${value.doc.id} to ${value.doc.data().enabled}`);
       const enabled = value.doc.data().enabled;
       const id = value.doc.id;

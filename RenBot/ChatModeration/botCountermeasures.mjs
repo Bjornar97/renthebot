@@ -1,6 +1,6 @@
-import chatControl from "../utilities/chatControl";
-import users from "../utilities/users";
-import say from "../say";
+import chatControl from "../utilities/chatControl.mjs";
+import users from "../utilities/users.mjs";
+import say from "../say.mjs";
 
 let messages = new Map();
 
@@ -28,8 +28,6 @@ export default {
       };
       messages.set(msg, message);
     }
-
-    console.log(`Number of times: ${message.number}`);
 
     if (message.number > messagesPer10Seconds) {
       this.deploy(message);

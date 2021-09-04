@@ -1,11 +1,13 @@
-const tmi = require("tmi.js");
-const admin = require("firebase-admin");
-require("dotenv").config();
-const serviceAccount = require("./adminKey.json");
+import tmi from "tmi.js";
+import admin from "firebase-admin";
+import dotenv from "dotenv";
+import serviceAccount from "./adminKey.mjs";
+
+dotenv.config();
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  databaseURL: "https://rendogtv-viewers-bot.firebaseio.com"
+  databaseURL: "https://rendogtv-viewers-bot.firebaseio.com",
 });
 
 var db = admin.firestore();
@@ -22,13 +24,13 @@ let userDiceTimestamp = {};
 const opts = {
   identity: {
     username: process.env.BOT_USERNAME,
-    password: process.env.OAUTH_TOKEN
+    password: process.env.OAUTH_TOKEN,
   },
   connection: {
     secure: false,
-    reconnect: true
+    reconnect: true,
   },
-  channels: [process.env.CHANNEL_NAME]
+  channels: [process.env.CHANNEL_NAME],
 };
 
 // Create a client with our options
@@ -49,8 +51,8 @@ let todayMessage = "";
 try {
   db.collection("mcnames")
     .get()
-    .then(docs => {
-      docs.forEach(doc => {
+    .then((docs) => {
+      docs.forEach((doc) => {
         mcnames[doc.data().twitch] = doc.data().mcname;
       });
     });
@@ -98,7 +100,7 @@ function onMessageHandler(target, context, msg, self) {
     months = badgeInfo.subscriber;
   } else {
     badgeInfo = {
-      subscriber: null
+      subscriber: null,
     };
   }
 
@@ -305,7 +307,7 @@ function onMessageHandler(target, context, msg, self) {
           } else {
             userDiceTimestamp[originalDisplayName] = {
               time: Date.now() + cooldown * 1000,
-              warning: false
+              warning: false,
             };
 
             rollDice(originalDisplayName);
@@ -313,7 +315,7 @@ function onMessageHandler(target, context, msg, self) {
         } else {
           userDiceTimestamp[originalDisplayName] = {
             time: Date.now() + cooldown * 1000,
-            warning: false
+            warning: false,
           };
           rollDice(originalDisplayName);
         }
@@ -437,7 +439,7 @@ function onMessageHandler(target, context, msg, self) {
           `"!resetblameren" resets the blameren count`,
           `"!resetblamechat" and "!resetbadidea" works the same way as above.`,
           `"!timer start" to start the timer.`,
-          `"!timer stop" to stop the timer`
+          `"!timer stop" to stop the timer`,
         ];
         for (let i = 0; i < messages.length; i++) {
           const message = messages[i];
@@ -445,7 +447,7 @@ function onMessageHandler(target, context, msg, self) {
             console.log("sending whisper to " + displayName);
             client
               .raw(`PRIVMSG #${context.username} :/w ${message}`)
-              .catch(error => {
+              .catch((error) => {
                 console.dir(error);
               });
           }, i * 1200);
@@ -559,8 +561,8 @@ let pollData = null;
 db.collection("polls")
   .where("inProgress", "==", true)
   .where("deleted", "==", false)
-  .onSnapshot(snapshot => {
-    snapshot.docChanges().forEach(change => {
+  .onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((change) => {
       const data = change.doc.data();
       switch (change.type) {
         case "added":
@@ -623,7 +625,7 @@ function stateEndedPoll(id) {
   db.collection("polls")
     .doc(id)
     .get()
-    .then(doc => {
+    .then((doc) => {
       const data = doc.data();
       data.result.forEach((res, index) => {
         total += res;
@@ -692,14 +694,14 @@ function vote(displayName, letter) {
         .collection("votes")
         .doc(displayName);
 
-      doc.get().then(val => {
+      doc.get().then((val) => {
         if (val.exists) {
           doc.update({
-            vote: code
+            vote: code,
           });
         } else {
           doc.set({
-            vote: letter.toUpperCase().charCodeAt(0) - 65
+            vote: letter.toUpperCase().charCodeAt(0) - 65,
           });
         }
       });
@@ -718,13 +720,13 @@ function addSub(displayName, months, task) {
   try {
     task = task.charAt(0).toUpperCase() + task.substring(1);
     const docref = subsCollection.doc(displayName);
-    docref.get().then(doc => {
+    docref.get().then((doc) => {
       if (doc.exists) {
         docref.update({
           name: displayName,
           months: months,
           will: task,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       } else {
         docref.set({
@@ -732,7 +734,7 @@ function addSub(displayName, months, task) {
           months: months,
           will: task,
           selected: false,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
       registered(displayName);
@@ -751,7 +753,7 @@ function registered(displayName) {
       timeoutGoing = true;
       setTimeout(() => {
         let output = "Registered subs: ";
-        registeredArray.forEach(name => {
+        registeredArray.forEach((name) => {
           output += `@${name} `;
         });
         send("rendogtv", output);
@@ -776,7 +778,7 @@ const steps = [
   To skip this step, use "!skip".
   `,
   `If you are leaving the stream at any point, please use the "!leave" command to remove yourself from the list. Use "!skip" to go to next step.`,
-  `You are done! To see yourself on the website go to: https://rendogtv-viewers-bot.web.app/`
+  `You are done! To see yourself on the website go to: https://rendogtv-viewers-bot.web.app/`,
 ];
 
 function tutorial(displayName, sub = undefined) {
@@ -791,7 +793,7 @@ function tutorial(displayName, sub = undefined) {
   } else {
     tutorialPeople[displayName] = {
       step: 0,
-      sub: sub
+      sub: sub,
     };
   }
 
@@ -838,11 +840,9 @@ function resetSubs() {
   try {
     db.collection("subs")
       .get()
-      .then(snapshot => {
-        snapshot.docs.forEach(doc => {
-          db.collection("subs")
-            .doc(doc.id)
-            .delete();
+      .then((snapshot) => {
+        snapshot.docs.forEach((doc) => {
+          db.collection("subs").doc(doc.id).delete();
         });
       });
   } catch (error) {
@@ -887,22 +887,16 @@ async function badIdea(channelName) {
 }
 
 function resetBlameRen() {
-  db.collection("channels")
-    .doc("rendogtv")
-    .update({ blame: 0 });
+  db.collection("channels").doc("rendogtv").update({ blame: 0 });
 }
 
 function resetBlameChat() {
-  db.collection("channels")
-    .doc("rendogtv")
-    .update({ blameChat: 0 });
+  db.collection("channels").doc("rendogtv").update({ blameChat: 0 });
 }
 
 function resetBadIdea() {
   badIdeers = [];
-  db.collection("channels")
-    .doc("rendogtv")
-    .update({ badIdea: 0 });
+  db.collection("channels").doc("rendogtv").update({ badIdea: 0 });
 }
 
 const MCNamesCollection = db.collection("mcnames");
@@ -910,7 +904,7 @@ const MCNamesCollection = db.collection("mcnames");
 function setMCName(displayName, MCName) {
   MCNamesCollection.doc(displayName).set({
     twitch: displayName,
-    mcname: MCName
+    mcname: MCName,
   });
   setTimeout(() => {
     done(displayName, 0);
@@ -936,12 +930,12 @@ async function rollDice(displayName) {
     numberOfRolls = doc.data().number + 1;
     docRef.update({
       total: admin.firestore.FieldValue.increment(num),
-      number: admin.firestore.FieldValue.increment(1)
+      number: admin.firestore.FieldValue.increment(1),
     });
   } else {
     docRef.set({
       total: num,
-      number: 1
+      number: 1,
     });
     total = num;
     numberOfRolls = 1;
@@ -949,21 +943,21 @@ async function rollDice(displayName) {
 
   send(
     "rendogtv",
-    `@${displayName} You rolled a ${num}. Your average is ${Math.round(
-      (total / numberOfRolls) * 100
-    ) / 100}`
+    `@${displayName} You rolled a ${num}. Your average is ${
+      Math.round((total / numberOfRolls) * 100) / 100
+    }`
   );
 }
 
 function addToLine(displayName) {
   rendogtvDoc.update({
-    line: admin.firestore.FieldValue.arrayUnion(displayName)
+    line: admin.firestore.FieldValue.arrayUnion(displayName),
   });
 }
 
 function removeFromLine(displayName) {
   rendogtvDoc.update({
-    line: admin.firestore.FieldValue.arrayRemove(displayName)
+    line: admin.firestore.FieldValue.arrayRemove(displayName),
   });
 }
 
@@ -972,7 +966,7 @@ async function printLine() {
   let string = "The following is in the line: ";
   const line = doc.data().line;
 
-  line.forEach(displayName => {
+  line.forEach((displayName) => {
     string += `@${displayName} `;
   });
 

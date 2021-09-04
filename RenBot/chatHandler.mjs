@@ -1,27 +1,27 @@
-import say from "./say.js";
-import chatSpeed from "./ChatSpeed/speed";
-import stringTools from "./utilities/strings";
-import info from "./StreamInfo/info";
-import subList from "./SubList/subList";
-import McName from "./McNames/McName";
-import ChatInteractions from "./ChatInteractions/chatResponse";
-import commands from "./utilities/commands";
-import dice from "./ChatFun/dice";
-import blame from "./ChatFun/blames";
-import line from "./ChatFun/line";
-import counts from "./ChatFun/counts";
-import suggestion from "./ChatInteractions/suggestion";
-import beverage from "./ChatFun/beverage";
-import poll from "./Strawpolls/poll";
-import strings from "./utilities/strings";
-import activeFeatures from "./utilities/activeFeatures.js";
-import timer from "./Timer/timer.js";
-import client from "./main.js";
-import users from "./utilities/users.js";
-import botManagement from "./utilities/botManagement.js";
-import modtools from "./ChatModeration/modtools.js";
-import streamday from "./HermitCraft/streamday.js";
-import countermeasures from "./ChatModeration/botCountermeasures";
+import say from "./say.mjs";
+import chatSpeed from "./ChatSpeed/speed.mjs";
+import stringTools from "./utilities/strings.mjs";
+import info from "./StreamInfo/info.mjs";
+import subList from "./SubList/subList.mjs";
+import McName from "./McNames/McName.mjs";
+import ChatInteractions from "./ChatInteractions/chatResponse.mjs";
+import commands from "./utilities/commands.mjs";
+import dice from "./ChatFun/dice.mjs";
+import blame from "./ChatFun/blames.mjs";
+import line from "./ChatFun/line.mjs";
+import counts from "./ChatFun/counts.mjs";
+import suggestion from "./ChatInteractions/suggestion.mjs";
+import beverage from "./ChatFun/beverage.mjs";
+import poll from "./Strawpolls/poll.mjs";
+import strings from "./utilities/strings.mjs";
+import activeFeatures from "./utilities/activeFeatures.mjs";
+import timer from "./Timer/timer.mjs";
+import client from "./main.mjs";
+import users from "./utilities/users.mjs";
+import botManagement from "./utilities/botManagement.mjs";
+import modtools from "./ChatModeration/modtools.mjs";
+import streamday from "./HermitCraft/streamday.mjs";
+import countermeasures from "./ChatModeration/botCountermeasures.mjs";
 
 let first = true;
 let allowMessages = true;
@@ -51,9 +51,9 @@ export default async function ChatHandler(channel, user, message, self) {
   // ChatInteractions.smartResponse(msgLower, displayName);
 
   // Countermeasures against bots, exception for mods and subscribers to save computing time and ram usage
-  //if (!user.mod && !user.subscriber) {
-  countermeasures.addMessage(message, user.username);
-  //}
+  if (!user.mod && !user.subscriber) {
+    countermeasures.addMessage(message, user.username);
+  }
 
   // Checking if the first letter is !, if not, returns
   let commandName = commandArray[0].trim().toLowerCase();
@@ -311,7 +311,6 @@ export default async function ChatHandler(channel, user, message, self) {
       break;
 
     case "!suggestion":
-      console.log("Suggestion command");
       auth = commands.auth(
         "suggestion",
         displayName,
@@ -430,13 +429,13 @@ export default async function ChatHandler(channel, user, message, self) {
     case "!vote":
       if (!isTellingToWhisper) {
         isTellingToWhisper = true;
-        setTimeout(() => {
-          isTellingToWhisper = false;
-          say(
-            channel,
-            "IMPORTANT!: VOTE BY WHISPERING TO ME! DO NOT USE !vote IN CHAT!"
-          );
-        }, 5000);
+        // setTimeout(() => {
+        //   isTellingToWhisper = false;
+        //   say(
+        //     channel,
+        //     "IMPORTANT!: VOTE BY WHISPERING TO ME! DO NOT USE !vote IN CHAT!"
+        //   );
+        // }, 5000);
       }
       users.deleteMessage(user["id"]);
       break;
@@ -570,6 +569,18 @@ export default async function ChatHandler(channel, user, message, self) {
         user["id"]
       );
       if (auth.access) response = await modtools.lang(targetName, user["id"]);
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!gib":
+      auth = commands.auth(
+        "gib",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await modtools.gib(targetName, user["id"]);
       else if (auth.message) response = auth.message;
       break;
 

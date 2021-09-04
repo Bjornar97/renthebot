@@ -1,7 +1,21 @@
-import chatSpeed from "./ChatSpeed/speed";
-import info from "./StreamInfo/info";
+import chatSpeed from "./ChatSpeed/speed.mjs";
+import info from "./StreamInfo/info.mjs";
 import admin from "firebase-admin";
-const serviceAccount = require("../adminKey.json");
+import serviceAccount from "../adminKey.mjs";
+
+import ChatHandler from "./chatHandler.mjs";
+import WhisperHandler from "./whisperHandler.mjs";
+import say from "./say.mjs";
+import botManagement from "./utilities/botManagement.mjs";
+import commands from "./utilities/commands.mjs";
+import activeFeatures from "./utilities/activeFeatures.mjs";
+
+import fs from "fs";
+
+import tmi from "tmi.js";
+import dotenv from "dotenv";
+
+console.log("Starting");
 
 try {
   admin.initializeApp({
@@ -10,8 +24,7 @@ try {
   });
 } catch (error) {}
 
-import tmi from "tmi.js";
-require("dotenv").config();
+dotenv.config();
 
 // Define configuration options
 const opts = {
@@ -36,13 +49,6 @@ export default client;
 
 console.log("Created Client");
 
-import ChatHandler from "./chatHandler";
-import WhisperHandler from "./whisperHandler";
-import say from "./say";
-import botManagement from "./utilities/botManagement";
-import commands from "./utilities/commands";
-import activeFeatures from "./utilities/activeFeatures";
-
 client.on("chat", ChatHandler);
 client.on("whisper", WhisperHandler);
 client.on("slowmode", chatSpeed.slowModeUpdate);
@@ -54,7 +60,6 @@ client.connect();
 function onConnectedHandler(addr, port) {
   console.log(`* I have a connection`);
   try {
-    const fs = require("fs");
     const restart = JSON.parse(fs.readFileSync("./restart.json"));
     console.dir(restart);
     if (restart.restart) {

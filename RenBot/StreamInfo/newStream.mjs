@@ -1,8 +1,8 @@
-import features from "../utilities/activeFeatures";
-import commands from "../utilities/commands";
-import subList from "../SubList/subList";
-import line from "../ChatFun/line";
-import say from "../say";
+import features from "../utilities/activeFeatures.mjs";
+import commands from "../utilities/commands.mjs";
+import subList from "../SubList/subList.mjs";
+import line from "../ChatFun/line.mjs";
+import say from "../say.mjs";
 
 export default {
   onNewStream() {
@@ -16,5 +16,5 @@ export default {
 
     commands.restartListner();
     features.restartListner();
-  }
+  },
 };

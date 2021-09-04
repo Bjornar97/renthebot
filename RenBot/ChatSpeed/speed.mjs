@@ -1,5 +1,5 @@
-import say from "../say";
-import features from "../utilities/activeFeatures";
+import say from "../say.mjs";
+import features from "../utilities/activeFeatures.mjs";
 
 let speed = 0;
 let slowEnabled = false;
@@ -18,7 +18,7 @@ export default {
     const slowFeature = features.isEnabled("autoSlow");
     if (slowFeature) {
       console.log("Auto slow is enabled");
-      if (Date.now() - lastUpdate > 1 * 60 * 1000 ) {
+      if (Date.now() - lastUpdate > 1 * 60 * 1000) {
         console.log("Over 1 min since last update, timeout: " + timeoutGoing);
         if (!timeoutGoing) {
           console.log("Starting new timeout");
@@ -28,15 +28,15 @@ export default {
             timeoutGoing = false;
             if (speed > 100 && !slowEnabled && length !== 120) {
               say("rendogtv", "/slow 120");
-              this.slowModeUpdate(true, 120)
+              this.slowModeUpdate(true, 120);
             } else if (speed > 40 && !slowEnabled && length !== 60) {
               say("rendogtv", "/slow 60");
-              this.slowModeUpdate(true, 60)
+              this.slowModeUpdate(true, 60);
             } else if (speed > 20 && !slowEnabled && length !== 30) {
               say("rendogtv", "/slow 30");
-              this.slowModeUpdate(true, 30)
+              this.slowModeUpdate(true, 30);
             } else if (slowEnabled === true) {
-              console.log("Slowmode: " + slowEnabled)
+              console.log("Slowmode: " + slowEnabled);
               say("rendogtv", "/slowoff");
               this.slowModeUpdate(false, 0);
             }
@@ -49,5 +49,5 @@ export default {
     slowEnabled = enabled;
     length = length;
     lastUpdate = Date.now();
-  }
+  },
 };

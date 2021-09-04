@@ -1,4 +1,4 @@
-import client from "../main.js";
+import client from "../main.mjs";
 
 export default {
   setFollowerMode(minutes = 30) {

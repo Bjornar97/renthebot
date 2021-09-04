@@ -1,15 +1,15 @@
-import client from "../main.js";
+import client from "../main.mjs";
+import fs from "fs";
+import child_process from "child_process";
 
 export default {
   restart() {
     try {
       client.say("rendogtv", "Restarting, dont use any commands right now");
-      const fs = require("fs");
       fs.writeFileSync(
         "./restart.json",
         JSON.stringify({ restart: true, restartTime: Date.now() })
       );
-      var child_process = require("child_process");
       setTimeout(() => {
         child_process.exec("pm2 restart all");
       }, 4000);

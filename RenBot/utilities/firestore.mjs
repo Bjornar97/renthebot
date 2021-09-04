@@ -1,11 +1,10 @@
-const admin = require("firebase-admin");
-
-const serviceAccount = require("../../adminKey.json");
+import admin from "firebase-admin";
+import serviceAccount from "../../adminKey.mjs";
 
 try {
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://rendogtv-viewers-bot.firebaseio.com"
+    databaseURL: "https://rendogtv-viewers-bot.firebaseio.com",
   });
 } catch (error) {}
 let db;

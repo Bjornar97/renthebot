@@ -1,10 +1,10 @@
-import say from "./say.js";
-import commands from "./utilities/commands.js";
-import poll from "./Strawpolls/poll.js";
-import stringTools from "./utilities/strings";
-import client from "./main.js";
-import modtools from "./ChatModeration/modtools";
-import botManagement from "./utilities/botManagement.js";
+import say from "./say.mjs";
+import commands from "./utilities/commands.mjs";
+import poll from "./Strawpolls/poll.mjs";
+import stringTools from "./utilities/strings.mjs";
+import client from "./main.mjs";
+import modtools from "./ChatModeration/modtools.mjs";
+import botManagement from "./utilities/botManagement.mjs";
 
 export default async function WhisperHandler(username, user, message, self) {
   if (self) {

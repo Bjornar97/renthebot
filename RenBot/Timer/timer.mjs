@@ -1,4 +1,4 @@
-import say from "../say";
+import say from "../say.mjs";
 
 let startTimes = new Map();
 let intervals = {};

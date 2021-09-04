@@ -1,4 +1,4 @@
-import { db } from "../utilities/firestore";
+import { db } from "../utilities/firestore.mjs";
 const MCNamesCollection = db.collection("mcnames");
 
 export default {
@@ -6,9 +6,9 @@ export default {
     if (MCName) {
       MCNamesCollection.doc(displayName).set({
         twitch: displayName,
-        mcname: MCName
+        mcname: MCName,
       });
-      return `@${displayName} Your Minecraft-name "${MCName}" was added to the website.`;  
+      return `@${displayName} Your Minecraft-name "${MCName}" was added to the website.`;
     } else {
       return `@${displayName} Usage: "!mcname your-minecraft-name" to add yourself to this website: https://renthebot.web.app/mc-names`;
     }
@@ -16,5 +16,5 @@ export default {
   removeMCName(displayName) {
     MCNamesCollection.doc(displayName).delete();
     return `@${displayName} Your Minecraft-name was removed from the website.`;
-  }
+  },
 };
