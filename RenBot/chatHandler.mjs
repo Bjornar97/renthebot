@@ -4,7 +4,6 @@ import stringTools from "./utilities/strings.mjs";
 import info from "./StreamInfo/info.mjs";
 import subList from "./SubList/subList.mjs";
 import McName from "./McNames/McName.mjs";
-import ChatInteractions from "./ChatInteractions/chatResponse.mjs";
 import commands from "./utilities/commands.mjs";
 import dice from "./ChatFun/dice.mjs";
 import blame from "./ChatFun/blames.mjs";
