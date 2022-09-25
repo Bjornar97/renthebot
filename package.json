@@ -23,13 +23,13 @@
   },
   "homepage": "https://github.com/Bjornar97/rendogtv_viewers_bot#readme",
   "dependencies": {
-    "axios": "^0.21.2",
-    "dotenv": "^8.6.0",
+    "axios": "^0.27.2",
+    "dotenv": "^16.0.2",
     "esm": "^3.2.25",
-    "firebase-admin": "^8.13.0",
-    "pm2": "^5.1.0",
+    "firebase-admin": "^11.0.1",
+    "pm2": "^5.2.0",
     "request": "^2.88.2",
-    "tmi.js": "^1.8.3"
+    "tmi.js": "^1.8.5"
   },
   "devDependencies": {}
 }

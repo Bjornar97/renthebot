@@ -14,6 +14,7 @@ import fs from "fs";
 
 import tmi from "tmi.js";
 import dotenv from "dotenv";
+import modTools from "./ChatModeration/modtools.mjs";
 
 console.log("Starting");
 
@@ -53,6 +54,7 @@ client.on("chat", ChatHandler);
 client.on("whisper", WhisperHandler);
 client.on("slowmode", chatSpeed.slowModeUpdate);
 client.on("connected", onConnectedHandler);
+client.on("timeout", modTools.onTimeoutUser);
 
 // Connect to Twitch:
 client.connect();
@@ -69,9 +71,10 @@ function onConnectedHandler(addr, port) {
       } else {
         say(
           "rendogtv",
-          `I had some kind of headache... Im back now after ${
-            diff / (1000 * 60)
-          } minutes`
+          `I had some kind of headache... Im back now after ${(
+            diff /
+            (1000 * 60)
+          ).toFixed(1)} minutes`
         );
       }
 
@@ -91,7 +94,7 @@ setInterval(() => {
     commands.restartListner();
     activeFeatures.restartListner();
   }
-}, 1000 * 60 * 60 * 4);
+}, 1000 * 60 * 60 * 6);
 
 setInterval(() => {
   botManagement.restart();

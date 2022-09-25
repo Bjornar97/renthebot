@@ -2,7 +2,6 @@ import say from "./say.mjs";
 import chatSpeed from "./ChatSpeed/speed.mjs";
 import stringTools from "./utilities/strings.mjs";
 import info from "./StreamInfo/info.mjs";
-import subList from "./SubList/subList.mjs";
 import McName from "./McNames/McName.mjs";
 import commands from "./utilities/commands.mjs";
 import dice from "./ChatFun/dice.mjs";
@@ -92,66 +91,6 @@ export default async function ChatHandler(channel, user, message, self) {
 
   // Custom commands
   switch (commandName) {
-    case "!here":
-      auth = commands.auth(
-        "here",
-        displayName,
-        user.mod,
-        user.subscriber,
-        user["id"]
-      );
-      if (auth.access) subList.addSub(displayName, months, argumentsArray[0]);
-      else if (auth.message) response = auth.message;
-      break;
-
-    case "!fight":
-      auth = commands.auth(
-        "fight",
-        displayName,
-        user.mod,
-        user.subscriber,
-        user["id"]
-      );
-      if (auth.access) subList.addSub(displayName, months, "Fight");
-      else if (auth.message) response = auth.message;
-      break;
-
-    case "!mine":
-      auth = commands.auth(
-        "mine",
-        displayName,
-        user.mod,
-        user.subscriber,
-        user["id"]
-      );
-      if (auth.access) subList.addSub(displayName, months, "Mine");
-      else if (auth.message) response = auth.message;
-      break;
-
-    case "!blend":
-      auth = commands.auth(
-        "blend",
-        displayName,
-        user.mod,
-        user.subscriber,
-        user["id"]
-      );
-      if (auth.access) subList.addSub(displayName, months, "Blend");
-      else if (auth.message) response = auth.message;
-      break;
-
-    case "!leave":
-      auth = commands.auth(
-        "leave",
-        displayName,
-        user.mod,
-        user.subscriber,
-        user["id"]
-      );
-      if (auth.access) subList.removeSub(displayName);
-      else if (auth.message) response = auth.message;
-      break;
-
     case "!mcname":
       auth = commands.auth(
         "mcname",
@@ -174,30 +113,6 @@ export default async function ChatHandler(channel, user, message, self) {
         user["id"]
       );
       if (auth.access) response = McName.removeMCName(displayName);
-      else if (auth.message) response = auth.message;
-      break;
-
-    case "!reset":
-      auth = commands.auth(
-        "reset",
-        displayName,
-        user.mod,
-        user.subscriber,
-        user["id"]
-      );
-      if (auth.access) response = subList.resetSubList();
-      else if (auth.message) response = auth.message;
-      break;
-
-    case "!remove":
-      auth = commands.auth(
-        "remove",
-        displayName,
-        user.mod,
-        user.subscriber,
-        user["id"]
-      );
-      if (auth.access) response = subList.removeSub(displayName);
       else if (auth.message) response = auth.message;
       break;
 
@@ -547,6 +462,33 @@ export default async function ChatHandler(channel, user, message, self) {
       else if (auth.message) response = auth.message;
       break;
 
+    case "!punishlist":
+      auth = commands.auth(
+        "punishlist",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = modtools.listPunishments();
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!reset":
+      auth = commands.auth(
+        "reset",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      console.log(auth);
+      if (auth.access) response = modtools.wipePoints(targetName);
+      else if (auth.message) response = auth.message;
+
+      console.log(response);
+      break;
+
     case "!caps":
       auth = commands.auth(
         "caps",
@@ -555,7 +497,8 @@ export default async function ChatHandler(channel, user, message, self) {
         user.subscriber,
         user["id"]
       );
-      if (auth.access) response = await modtools.caps(targetName, user["id"]);
+      if (auth.access)
+        response = await modtools.punishment("caps", targetName, user["id"]);
       else if (auth.message) response = auth.message;
       break;
 
@@ -567,7 +510,8 @@ export default async function ChatHandler(channel, user, message, self) {
         user.subscriber,
         user["id"]
       );
-      if (auth.access) response = await modtools.lang(targetName, user["id"]);
+      if (auth.access)
+        response = await modtools.punishment("lang", targetName, user["id"]);
       else if (auth.message) response = auth.message;
       break;
 
@@ -579,7 +523,8 @@ export default async function ChatHandler(channel, user, message, self) {
         user.subscriber,
         user["id"]
       );
-      if (auth.access) response = await modtools.gib(targetName, user["id"]);
+      if (auth.access)
+        response = await modtools.punishment("gib", targetName, user["id"]);
       else if (auth.message) response = auth.message;
       break;
 
@@ -591,7 +536,8 @@ export default async function ChatHandler(channel, user, message, self) {
         user.subscriber,
         user["id"]
       );
-      if (auth.access) response = await modtools.repeat(targetName, user["id"]);
+      if (auth.access)
+        response = await modtools.punishment("repeat", targetName, user["id"]);
       else if (auth.message) response = auth.message;
       break;
 
@@ -603,7 +549,8 @@ export default async function ChatHandler(channel, user, message, self) {
         user.subscriber,
         user["id"]
       );
-      if (auth.access) response = await modtools.topic(targetName, user["id"]);
+      if (auth.access)
+        response = await modtools.punishment("topic", targetName, user["id"]);
       else if (auth.message) response = auth.message;
       break;
 
@@ -616,7 +563,7 @@ export default async function ChatHandler(channel, user, message, self) {
         user["id"]
       );
       if (auth.access)
-        response = await modtools.badwords(targetName, user["id"]);
+        response = await modtools.punishment("badw", targetName, user["id"]);
       else if (auth.message) response = auth.message;
       break;
 
@@ -628,7 +575,8 @@ export default async function ChatHandler(channel, user, message, self) {
         user.subscriber,
         user["id"]
       );
-      if (auth.access) response = await modtools.beg(targetName, user["id"]);
+      if (auth.access)
+        response = await modtools.punishment("beg", targetName, user["id"]);
       else if (auth.message) response = auth.message;
       break;
 
