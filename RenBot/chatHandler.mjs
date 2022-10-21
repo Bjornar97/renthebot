@@ -20,6 +20,7 @@ import botManagement from "./utilities/botManagement.mjs";
 import modtools from "./ChatModeration/modtools.mjs";
 import streamday from "./HermitCraft/streamday.mjs";
 import countermeasures from "./ChatModeration/botCountermeasures.mjs";
+import charityStream from "./CharityStream/charityStream.mjs";
 
 let first = true;
 let allowMessages = true;
@@ -621,6 +622,30 @@ export default async function ChatHandler(channel, user, message, self) {
         user["id"]
       );
       if (auth.access) await modtools.getToken(user.username);
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!testsheets":
+      auth = commands.auth(
+        "testsheets",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await charityStream.test();
+      else if (auth.message) response = auth.message;
+      break;
+
+    case "!testdonation":
+      auth = commands.auth(
+        "testdonation",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access) response = await charityStream.testDonations();
       else if (auth.message) response = auth.message;
       break;
 

@@ -4,6 +4,7 @@ node_modules
 
 adminKey.json
 adminKey.mjs
+tiltifyAPI.mjs
 
 output.log
 error.log

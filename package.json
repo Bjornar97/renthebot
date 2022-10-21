@@ -23,13 +23,14 @@
   },
   "homepage": "https://github.com/Bjornar97/rendogtv_viewers_bot#readme",
   "dependencies": {
+    "@google-cloud/local-auth": "^2.1.0",
     "axios": "^0.27.2",
     "dotenv": "^16.0.2",
     "esm": "^3.2.25",
     "firebase-admin": "^11.0.1",
+    "googleapis": "^105.0.0",
     "pm2": "^5.2.0",
     "request": "^2.88.2",
     "tmi.js": "^1.8.5"
-  },
-  "devDependencies": {}
+  }
 }

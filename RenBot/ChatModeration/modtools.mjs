@@ -16,7 +16,6 @@ db.collection("botdata")
     const data = doc.data().data;
 
     data.forEach((user) => {
-      console.log({ user });
       pointsMap.set(user.username, user.data);
     });
   });
