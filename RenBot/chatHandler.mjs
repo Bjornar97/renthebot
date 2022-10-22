@@ -625,30 +625,6 @@ export default async function ChatHandler(channel, user, message, self) {
       else if (auth.message) response = auth.message;
       break;
 
-    case "!testsheets":
-      auth = commands.auth(
-        "testsheets",
-        displayName,
-        user.mod,
-        user.subscriber,
-        user["id"]
-      );
-      if (auth.access) response = await charityStream.test();
-      else if (auth.message) response = auth.message;
-      break;
-
-    case "!testdonation":
-      auth = commands.auth(
-        "testdonation",
-        displayName,
-        user.mod,
-        user.subscriber,
-        user["id"]
-      );
-      if (auth.access) response = await charityStream.testDonations();
-      else if (auth.message) response = auth.message;
-      break;
-
     default:
       customMatch = false;
       break;

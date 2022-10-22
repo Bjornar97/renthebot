@@ -9,10 +9,12 @@ let bearer = tiltifyApi.bearerToken;
 let campaignId = 460726;
 let url = `https://tiltify.com/api/v3/campaigns/${campaignId}/donations`;
 
-const maxAttempts = 20;
+const maxAttempts = 10;
 const countPerPage = 50;
 
 let lastId;
+
+const firstId = 6322738;
 
 export default {
   async sendRequest(params) {
@@ -45,41 +47,7 @@ export default {
 
     return await this.sendRequest(params);
   },
-  async getAllDonations() {
-    console.log("Getting donations");
-    let donations = [];
-
-    let response;
-
-    let maxTries = maxAttempts;
-
-    let beforeId;
-
-    let isFirst = true;
-
-    do {
-      maxTries--;
-      response = await this.sendDonationsRequestBefore(beforeId);
-
-      if (response.data.data.length > 0) {
-        beforeId = response.data.data.at(-1).id;
-
-        if (isFirst) {
-          console.log(`Set last id to ${beforeId}`);
-          lastId = response.data.data[0].id;
-          isFirst = false;
-        }
-      }
-
-      response.data.data.forEach((donation) => {
-        donations.push(donation);
-      });
-    } while (response.data.data.length > 0 && maxTries > 0);
-
-    return donations;
-  },
   async getNextDonations(afterId) {
-    console.log("Getting next donations");
     let donations = [];
 
     let maxTries = maxAttempts;
@@ -98,7 +66,6 @@ export default {
 
       if (lastEntry) {
         lastId = lastEntry.id;
-        console.log(`Last ID: ${lastId}`);
       }
 
       response.data.data.forEach((donation) => {
@@ -113,17 +80,15 @@ export default {
       return;
     }
 
-    const prevLastId = charityDonations.getLastId();
+    let prevLastId = charityDonations.getLastId();
 
     let donations;
 
     if (!prevLastId) {
-      donations = await this.getAllDonations();
-    } else {
-      donations = await this.getNextDonations(prevLastId);
+      prevLastId = firstId;
     }
 
-    console.log({ donations });
+    donations = await this.getNextDonations(prevLastId);
 
     if (donations.length <= 0) {
       return;
@@ -133,36 +98,45 @@ export default {
       await db.runTransaction(async (t) => {
         let shouldWrite = [];
 
-        for (const donation of donations) {
-          const doc = await charityDonations
-            .getDonationsCollectionRef()
-            .doc(donation.id.toString())
-            .get();
+        let readPromises = [];
 
-          if (!doc.exists) {
-            console.log(`Pushing ${donation.id}`);
-            shouldWrite.push(donation);
-          }
+        for (const donation of donations) {
+          readPromises.push(
+            new Promise(async (resolve, reject) => {
+              const doc = await charityDonations
+                .getDonationsCollectionRef()
+                .doc(donation.id.toString())
+                .get();
+
+              if (!doc.exists) {
+                shouldWrite.push(donation);
+              }
+
+              resolve();
+            })
+          );
         }
 
-        console.log({ shouldWrite });
+        await Promise.all(readPromises);
+
+        let writePromises = [];
 
         for (const donation of shouldWrite) {
-          console.log(`Setting ${donation.id}`);
-
-          await charityDonations
-            .getDonationsCollectionRef()
-            .doc(donation.id.toString())
-            .set({
-              name: donation.name,
-              amount: donation.amount,
-              comment: donation.comment,
-              completedAt: donation.completedAt,
-              addedToSheet: donation.amount < charitySettings.getMinAmount(),
-            });
+          writePromises.push(
+            charityDonations
+              .getDonationsCollectionRef()
+              .doc(donation.id.toString())
+              .set({
+                name: donation.name,
+                amount: donation.amount,
+                comment: donation.comment,
+                completedAt: donation.completedAt,
+                addedToSheet: donation.amount < charitySettings.getMinAmount(),
+              })
+          );
         }
 
-        console.log(`lastId: ${lastId}`);
+        await Promise.all(writePromises);
 
         await charityDonations.getDonationInfoRef().update({
           lastId: lastId,

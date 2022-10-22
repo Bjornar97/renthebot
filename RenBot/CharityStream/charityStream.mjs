@@ -1,30 +1,56 @@
 import sheetsConnection from "./sheetsConnection.mjs";
 import tiltifyConnection from "./tiltifyConnection.mjs";
+import charitySettings from "./charitySettings.mjs";
+import say from "../say.mjs";
 
-export default {
-  async test() {
-    try {
-      sheetsConnection.append();
-    } catch (error) {
-      console.error(error);
-      return "Something went wrong";
+let tiltifyStarted = false;
+let sheetsStarted = false;
+
+const charityStream = {
+  gatherTiltifyDonations() {
+    if (!charitySettings.isEnabled()) {
+      return;
     }
 
-    return "success?";
-  },
-  async testDonations() {
     try {
-      await tiltifyConnection.updateDonations();
-
-      await setTimeout(() => {
-        sheetsConnection.appendMissingDonations();
-      }, 3000);
-
-      return "success?";
+      tiltifyConnection.updateDonations();
     } catch (error) {
-      console.error(error);
+      say(
+        "rendogtv",
+        "Gathering donations from Tiltify failed! I need help, @Bjornar97"
+      );
+    }
+  },
+  putDonationsInSheet() {
+    if (!charitySettings.isEnabled()) {
+      return;
+    }
 
-      return "Error!";
+    try {
+      sheetsConnection.appendMissingDonations();
+    } catch (error) {
+      say(
+        "rendogtv",
+        "Putting donations into spreadsheet failed! I need help, @Bjornar97"
+      );
     }
   },
 };
+
+if (!tiltifyStarted) {
+  tiltifyStarted = true;
+  setInterval(() => {
+    charityStream.gatherTiltifyDonations();
+  }, 20000);
+}
+
+if (!sheetsStarted) {
+  sheetsStarted = true;
+  setTimeout(() => {
+    setInterval(() => {
+      charityStream.putDonationsInSheet();
+    }, 20000);
+  }, 10000);
+}
+
+export default charityStream;

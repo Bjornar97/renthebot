@@ -16,6 +16,8 @@ import tmi from "tmi.js";
 import dotenv from "dotenv";
 import modTools from "./ChatModeration/modtools.mjs";
 
+import charityStream from "./CharityStream/charityStream.mjs";
+
 console.log("Starting");
 
 try {
