@@ -581,6 +581,19 @@ export default async function ChatHandler(channel, user, message, self) {
       else if (auth.message) response = auth.message;
       break;
 
+    case "!tell":
+      auth = commands.auth(
+        "tell",
+        displayName,
+        user.mod,
+        user.subscriber,
+        user["id"]
+      );
+      if (auth.access)
+        response = await modtools.punishment("tell", targetName, user["id"]);
+      else if (auth.message) response = auth.message;
+      break;
+
     case "!next":
       auth = commands.auth(
         "next",
